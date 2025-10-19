@@ -1,0 +1,10 @@
+{% extends base.html %}
+{% load static %}
+{% block title %}Préstamos del Usuario - Biblioteca de la Solidaridad{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4"><i class="fas fa-book-reader"></i> Logout</h2>
+    <p>Has cerrado sesión exitosamente. ¡Hasta pronto!</p>
+    <a href="{% url 'home' %}" class="btn btn-primary"><i class="fas fa-home"></i> Volver al Inicio</a>
+{% endblock %}

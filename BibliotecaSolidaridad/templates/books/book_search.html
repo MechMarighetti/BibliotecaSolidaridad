@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Buscar Libros - Biblioteca de la Solidaridad{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4"><i class="fas fa-search"></i> Buscar Libros</h2>
+    <form method="get" action="{% url 'book_search' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Título, autor o ISBN" value="{{ query }}">
+            <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+        </div>
+    </form>
+
+    {% if results %}
+        <h4>Resultados de la búsqueda:</h4>
+        <ul class="list-group">
+            {% for book in results %}
+                <li class="list-group-item">
+                    <h5>{{ book.title }}</h5>
+                    <p class="mb-1"><strong>Autor:</strong> {{ book.author }}</p>
+                    <p class="mb-1"><strong>ISBN:</strong> {{ book.isbn }}</p>
+                    <p class="mb-1"><strong>Categoría:</strong> {{ book.category.name }}</p>
+                    <p class="mb-1"><strong>Disponibilidad:</strong> 
+                        {% if book.is_available %}
+                            <span class="text-success">Disponible</span>
+                        {% else %}
+                            <span class="text-danger">No Disponible</span>
+                    {% endif %}
+                </p>
+            </li>
+        {% endfor %}  
+    </ul>
+{% endif %}
+</div>
+
+tabla de Resultados
+{% for book in results %}
+    <tr>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.isbn }}</td>
+        <td>{{ book.category.name }}</td>
+        <td>
+            {% if book.is_available %}
+                <span class="text-success">Disponible</span>
+            {% else %}
+                <span class="text-danger">No Disponible</span>
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+
+{% endblock %}
+        

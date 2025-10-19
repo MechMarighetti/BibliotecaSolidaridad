@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carnet Virtual - Biblioteca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ===== VARIABLES Y ESTILOS BASE ===== */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --error: #ef233c;
+            --neutral-50: #f8f9fa;
+            --neutral-100: #e9ecef;
+            --neutral-200: #dee2e6;
+            --neutral-300: #ced4da;
+            --neutral-400: #adb5bd;
+            --neutral-500: #6c757d;
+            --neutral-600: #495057;
+            --neutral-700: #343a40;
+            --neutral-800: #212529;
+            --neutral-900: #121416;
+            
+            --font-display: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+            
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            line-height: 1.6;
+            color: var(--neutral-800);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--neutral-900);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--neutral-600);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ===== CARD DE CARNET ===== */
+        .card-carnet {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-carnet:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-carnet::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .avatar-container {
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--neutral-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .user-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--neutral-500);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+        }
+
+        .puntaje {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--success) 0%, var(--primary-light) 100%);
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--neutral-700);
+            border: 2px solid var(--neutral-300);
+        }
+
+        .btn-outline:hover {
+            background: var(--neutral-100);
+            border-color: var(--neutral-400);
+        }
+
+        /* ===== TABLA DE HISTORIAL ===== */
+        .history-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        th {
+            background-color: var(--neutral-50);
+            font-weight: 600;
+            color: var(--neutral-700);
+            font-family: var(--font-display);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: var(--neutral-50);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background-color: rgba(76, 201, 240, 0.15);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background-color: rgba(248, 150, 30, 0.15);
+            color: var(--warning);
+        }
+
+        .status-late {
+            background-color: rgba(239, 35, 60, 0.15);
+            color: var(--error);
+        }
+
+        .points-change {
+            font-weight: 600;
+        }
+
+        .points-positive {
+            color: var(--success);
+        }
+
+        .points-negative {
+            color: var(--error);
+        }
+
+        /* ===== ESTADO VACÍO ===== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--neutral-600);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--neutral-400);
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--neutral-700);
+        }
+
+        .empty-description {
+            margin-bottom: 1.5rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .card-carnet {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.5rem;
+            }
+            
+            .user-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-actions {
+                justify-content: center;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Biblioteca de la Solidaridad</h1>
+            <p class="subtitle">Tu carnet virtual de socio - Gestioná tus préstamos y puntaje</p>
+        </header>
+        
+        <main class="card-carnet">
+            <div class="avatar-container">
+                <img src="https://ui-avatars.com/api/?name=Maria+Gonzalez&background=4361ee&color=fff&size=120&bold=true" alt="Avatar de María González" class="avatar">
+            </div>
+            
+            <div class="user-info">
+                <h2 class="user-name">María González</h2>
+                
+                <div class="user-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Número de Carnet</span>
+                        <span class="detail-value">BL-2023-4582</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Fecha de Registro</span>
+                        <span class="detail-value">15/03/2023</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Puntaje Actual</span>
+                        <span class="puntaje">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+                            </svg>
+                            85 puntos
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-actions">
+                    <button class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 6V20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4H5C3.89 4 3 4.9 3 6Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Solicitar un préstamo
+                    </button>
+                    
+                    <button class="btn btn-outline">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Cambiar de usuario
+                    </button>
+                    
+                    <button class="btn btn-danger">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 7V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V7" stroke="currentColor" stroke-width="2"/>
+                            <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 7H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Dar de baja
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <section class="history-section">
+            <div class="section-header">
+                <h2>Historial de Préstamos</h2>
+                <button class="btn btn-primary">Nueva Solicitud</button>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Libro</th>
+                            <th>Fecha Préstamo</th>
+                            <th>Fecha Devolución</th>
+                            <th>Estado</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong>Don Quijote de la Mancha</strong><br>
+                                <small>Miguel de Cervantes</small>
+                            </td>
+                            <td>15/08/2023</td>
+                            <td>30/08/2023</td>
+                            <td>
+                                <span class="status-badge status-completed">Devuelto</span>
+                            </td>
+                            <td class="points-change points-positive">+5</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Cien años de soledad</strong><br>
+                                <small>Gabriel García Márquez</small>
+                            </td>
+                            <td>02/09/2023</td>
+                            <td>17/09/2023</td>
+                            <td>
+                                <span class="status-badge status-late">Devuelto con retraso</span>
+                            </td>
+                            <td class="points-change points-negative">-10</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>El Aleph</strong><br>
+                                <small>Jorge Luis Borges</small>
+                            </td>
+                            <td>20/09/2023</td>
+                            <td>05/10/2023</td>
+                            <td>
+                                <span class="status-badge status-completed">Devuelto</span>
+                            </td>
+                            <td class="points-change points-positive">+5</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Rayuela</strong><br>
+                                <small>Julio Cortázar</small>
+                            </td>
+                            <td>10/10/2023</td>
+                            <td>25/10/2023</td>
+                            <td>
+                                <span class="status-badge status-completed">Devuelto</span>
+                            </td>
+                            <td class="points-change points-positive">+5</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Ficciones</strong><br>
+                                <small>Jorge Luis Borges</small>
+                            </td>
+                            <td>05/11/2023</td>
+                            <td>20/11/2023</td>
+                            <td>
+                                <span class="status-badge status-pending">En préstamo</span>
+                            </td>
+                            <td class="points-change">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Estado vacío (comentado para mostrar la tabla) -->
+            <!--
+            <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <h3 class="empty-title">Aún no tenés préstamos registrados</h3>
+                <p class="empty-description">Empezá a pedir libros en préstamo desde ahora y construí tu historial de lectura.</p>
+                <button class="btn btn-primary">Hacer mi primera solicitud</button>
+            </div>
+            -->
+        </section>
+    </div>
+
+    <script>
+        // Funcionalidad básica para los botones
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const buttonText = this.textContent.trim();
+                
+                if (buttonText.includes('Solicitar')) {
+                    alert('Redirigiendo a formulario de préstamo...');
+                } else if (buttonText.includes('Cambiar')) {
+                    alert('Redirigiendo a selección de usuario...');
+                } else if (buttonText.includes('Dar de baja')) {
+                    if (confirm('¿Estás seguro de que querés dar de baja tu carnet? Esta acción no se puede deshacer.')) {
+                        alert('Tu solicitud de baja ha sido enviada.');
+                    }
+                } else if (buttonText.includes('Nueva Solicitud')) {
+                    alert('Redirigiendo a nueva solicitud de préstamo...');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

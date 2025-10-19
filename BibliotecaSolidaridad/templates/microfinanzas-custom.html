@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microfinanzas - Esquema de Colores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===== VARIABLES CSS BASADAS EN TU PALETA ===== */
+        :root {
+            /* Colores principales basados en tu paleta */
+            --primary: #1a4177;        /* Azul marino - principal */
+            --primary-light: #9bc0e7;  /* Azul claro - secundario */
+            --primary-dark: #0d2b52;   /* Azul marino oscuro */
+            
+            --secondary: #ec6043;      /* Naranja rojizo - acento fuerte */
+            --secondary-light: #ee9f52; /* Naranja - acento suave */
+            
+            --accent: #f4a9b6;         /* Rosa claro - acento decorativo */
+            --background: #fff5ec;     /* Crema - fondo principal */
+            
+            /* Colores funcionales */
+            --success: #4CAF50;        /* Verde para éxito */
+            --warning: #FF9800;        /* Naranja para advertencias */
+            --error: #F44336;          /* Rojo para errores */
+            --info: #2196F3;           /* Azul para información */
+            
+            /* Colores neutrales derivados */
+            --neutral-50: #fefcf9;
+            --neutral-100: #fdf8f3;
+            --neutral-200: #f9f0e5;
+            --neutral-300: #f0e2d1;
+            --neutral-400: #d4c8b8;
+            --neutral-500: #a89e91;
+            --neutral-600: #7a7268;
+            --neutral-700: #5c554d;
+            --neutral-800: #3e3933;
+            --neutral-900: #201d1a;
+            
+            /* Gradientes */
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--secondary-light) 100%);
+            --gradient-background: linear-gradient(135deg, var(--background) 0%, var(--neutral-100) 100%);
+            
+            /* Tipografía */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --font-heading: 'Plus Jakarta Sans', var(--font-family);
+            
+            /* Espaciado */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            
+            /* Bordes */
+            --radius-sm: 0.5rem;
+            --radius-md: 1rem;
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
+            
+            /* Sombras */
+            --shadow-sm: 0 2px 4px rgba(26, 65, 119, 0.1);
+            --shadow-md: 0 4px 8px rgba(26, 65, 119, 0.15);
+            --shadow-lg: 0 10px 20px rgba(26, 65, 119, 0.2);
+            --shadow-xl: 0 20px 40px rgba(26, 65, 119, 0.25);
+            
+            /* Transiciones */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        /* ===== ESTILOS BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--neutral-800);
+            background: var(--gradient-background);
+            padding: var(--space-md);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--space-sm);
+            color: var(--primary);
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.75rem; }
+        h4 { font-size: 1.5rem; }
+        h5 { font-size: 1.25rem; }
+        h6 { font-size: 1rem; }
+
+        p {
+            margin-bottom: var(--space-sm);
+            color: var(--neutral-700);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        a:hover {
+            color: var(--secondary);
+        }
+
+        /* ===== CONTENEDOR PRINCIPAL ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md) 0;
+            margin-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            gap: var(--space-md);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .nav-link:hover {
+            background-color: var(--neutral-200);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--gradient-secondary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-accent {
+            background: var(--gradient-accent);
+            color: var(--neutral-800);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: var(--space-xs) var(--space-sm);
+            font-size: 0.85rem;
+        }
+
+        .btn-lg {
+            padding: var(--space-md) var(--space-lg);
+            font-size: 1.1rem;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .card-primary h3, 
+        .card-primary h4,
+        .card-primary p {
+            color: white;
+        }
+
+        .card-secondary {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+
+        .card-secondary h3, 
+        .card-secondary h4,
+        .card-secondary p {
+            color: white;
+        }
+
+        .card-accent {
+            background: var(--gradient-accent);
+            color: var(--neutral-800);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            font-size: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+        }
+
+        .card-badge {
+            background-color: var(--secondary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ===== BENTO GRID ===== */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .bento-item {
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .bento-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .bento-wide {
+            grid-column: span 2;
+        }
+
+        .bento-tall {
+            grid-row: span 2;
+        }
+
+        /* ===== SISTEMA DE GRIDS ===== */
+        .grid {
+            display: grid;
+            gap: var(--space-md);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        /* ===== PALETA DE COLORES ===== */
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xl);
+        }
+
+        .color-item {
+            flex: 1;
+            min-width: 150px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .color-swatch {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .color-info {
+            padding: var(--space-sm);
+            background: white;
+        }
+
+        .color-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .color-hex {
+            font-size: 0.85rem;
+            color: var(--neutral-600);
+        }
+
+        /* ===== ESTADÍSTICAS Y MÉTRICAS ===== */
+        .metric-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--neutral-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            margin-top: var(--space-xs);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--error);
+        }
+
+        /* ===== MODO ALTO CONTRASTE ===== */
+        .high-contrast {
+            --primary: #0000ff;
+            --primary-light: #3333ff;
+            --primary-dark: #0000cc;
+            --secondary: #ff0000;
+            --secondary-light: #ff3333;
+            --accent: #ffff00;
+            --background: #ffffff;
+            
+            --neutral-50: #ffffff;
+            --neutral-100: #f0f0f0;
+            --neutral-200: #d0d0d0;
+            --neutral-300: #a0a0a0;
+            --neutral-400: #707070;
+            --neutral-500: #505050;
+            --neutral-600: #303030;
+            --neutral-700: #202020;
+            --neutral-800: #101010;
+            --neutral-900: #000000;
+            
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            --gradient-accent: var(--accent);
+            --gradient-background: var(--background);
+            
+            color: var(--neutral-900);
+            background-color: var(--neutral-50);
+        }
+
+        .high-contrast .card {
+            border: 2px solid var(--neutral-800);
+        }
+
+        /* ===== UTILIDADES ===== */
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+
+        .mb-xs { margin-bottom: var(--space-xs); }
+        .mb-sm { margin-bottom: var(--space-sm); }
+        .mb-md { margin-bottom: var(--space-md); }
+        .mb-lg { margin-bottom: var(--space-lg); }
+        .mb-xl { margin-bottom: var(--space-xl); }
+
+        .mt-xs { margin-top: var(--space-xs); }
+        .mt-sm { margin-top: var(--space-sm); }
+        .mt-md { margin-top: var(--space-md); }
+        .mt-lg { margin-top: var(--space-lg); }
+        .mt-xl { margin-top: var(--space-xl); }
+
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+
+        .hidden { display: none; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bento-wide, .bento-tall {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+            
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+            
+            .nav {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .color-palette {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">MF</div>
+                MicroFinanzas
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-link active">Inicio</a>
+                <a href="#" class="nav-link">Préstamos</a>
+                <a href="#" class="nav-link">Ahorros</a>
+                <a href="#" class="nav-link">Inversiones</a>
+                <a href="#" class="nav-link">Educación</a>
+            </nav>
+            <div class="flex">
+                <button class="btn btn-outline btn-sm" id="toggleContrast">Alto Contraste</button>
+            </div>
+        </header>
+
+        <section class="mb-xl">
+            <h1 class="text-center">Esquema de Colores para Microfinanzas</h1>
+            <p class="text-center">Basado en tu paleta: #f4a9b6, #fff5ec, #9bc0e7, #ec6043, #ee9f52, #1a4177</p>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Paleta de Colores</h2>
+            <div class="color-palette">
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #1a4177;">Primary</div>
+                    <div class="color-info">
+                        <div class="color-name">Azul Marino</div>
+                        <div class="color-hex">#1a4177</div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #9bc0e7;">Primary Light</div>
+                    <div class="color-info">
+                        <div class="color-name">Azul Claro</div>
+                        <div class="color-hex">#9bc0e7</div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #ec6043;">Secondary</div>
+                    <div class="color-info">
+                        <div class="color-name">Naranja Rojizo</div>
+                        <div class="color-hex">#ec6043</div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #ee9f52;">Secondary Light</div>
+                    <div class="color-info">
+                        <div class="color-name">Naranja</div>
+                        <div class="color-hex">#ee9f52</div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #f4a9b6; color: #333;">Accent</div>
+                    <div class="color-info">
+                        <div class="color-name">Rosa Claro</div>
+                        <div class="color-hex">#f4a9b6</div>
+                    </div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #fff5ec; color: #333;">Background</div>
+                    <div class="color-info">
+                        <div class="color-name">Crema</div>
+                        <div class="color-hex">#fff5ec</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Estadísticas</h2>
+            <div class="grid grid-4">
+                <div class="metric-card">
+                    <div class="metric-value">$12,450</div>
+                    <div class="metric-label">Préstamos Activos</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 12%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">$8,230</div>
+                    <div class="metric-label">Ahorros Totales</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 5%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">94%</div>
+                    <div class="metric-label">Tasa de Éxito</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 2%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1,254</div>
+                    <div class="metric-label">Clientes Activos</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 8%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Bento Grid</h2>
+            <div class="bento-grid">
+                <div class="bento-item card-primary">
+                    <div class="card-icon">📚</div>
+                    <h3>Aprende Todo lo que Puedas</h3>
+                    <p>Capacitación continua para mejorar tus habilidades financieras y de negocio.</p>
+                </div>
+                <div class="bento-item">
+                    <h3>Piensa en tus Clientes</h3>
+                    <p>Tu negocio está centrado en su cliente. Conoce sus necesidades para ofrecer soluciones efectivas.</p>
+                    <button class="btn btn-primary mt-md">Saber más</button>
+                </div>
+                <div class="bento-item bento-wide card-secondary">
+                    <h3>Enamórate de tu Proyecto</h3>
+                    <p>La pasión por tu trabajo es el motor que impulsa el éxito a largo plazo.</p>
+                    <div class="flex-between mt-md">
+                        <button class="btn btn-outline">Compartir</button>
+                        <button class="btn btn-primary">Inspírate</button>
+                    </div>
+                </div>
+                <div class="bento-item bento-tall card-accent">
+                    <div class="card-icon">💰</div>
+                    <h3>Controla tus Finanzas</h3>
+                    <p>Gestiona tus ingresos y gastos para mantener un equilibrio financiero saludable.</p>
+                    <button class="btn btn-secondary mt-md">Ver detalles</button>
+                </div>
+                <div class="bento-item">
+                    <h3>Establece Metas</h3>
+                    <p>Define objetivos claros y medibles para guiar tu progreso financiero.</p>
+                    <button class="btn btn-accent mt-md">Establecer metas</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Productos Financieros</h2>
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Préstamos para Emprendedores</h4>
+                        <span class="card-badge">Popular</span>
+                    </div>
+                    <p>Financiamiento para iniciar o expandir tu negocio con tasas competitivas.</p>
+                    <div class="flex-between mt-md">
+                        <div>
+                            <strong>Tasa desde 8%</strong>
+                        </div>
+                        <button class="btn btn-primary btn-sm">Aplicar</button>
+                    </div>
+                </div>
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h4>Cuentas de Ahorro</h4>
+                    </div>
+                    <p>Gana intereses mientras ahorras para tus metas futuras.</p>
+                    <div class="flex-between mt-md">
+                        <div>
+                            <strong>Hasta 5% de interés</strong>
+                        </div>
+                        <button class="btn btn-outline btn-sm">Abrir cuenta</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Seguros</h4>
+                        <span class="card-badge">Nuevo</span>
+                    </div>
+                    <p>Protege tu negocio y tu familia con nuestros planes de seguro.</p>
+                    <div class="flex-between mt-md">
+                        <div>
+                            <strong>Desde $15/mes</strong>
+                        </div>
+                        <button class="btn btn-secondary btn-sm">Cotizar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Botones de Ejemplo</h2>
+            <div class="flex flex-center" style="gap: var(--space-sm); flex-wrap: wrap;">
+                <button class="btn btn-primary">Primario</button>
+                <button class="btn btn-secondary">Secundario</button>
+                <button class="btn btn-accent">Acento</button>
+                <button class="btn btn-outline">Outline</button>
+                <button class="btn btn-primary btn-sm">Pequeño</button>
+                <button class="btn btn-primary btn-lg">Grande</button>
+            </div>
+        </section>
+
+        <footer class="text-center mt-xl mb-md">
+            <p>© 2023 MicroFinanzas. Todos los derechos reservados.</p>
+            <p class="mt-xs">
+                <a href="#">Términos de servicio</a> | 
+                <a href="#">Política de privacidad</a> | 
+                <a href="#">Contacto</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle para modo alto contraste
+        document.getElementById('toggleContrast').addEventListener('click', function() {
+            document.body.classList.toggle('high-contrast');
+            
+            // Cambiar texto del botón
+            if (document.body.classList.contains('high-contrast')) {
+                this.textContent = 'Contraste Normal';
+            } else {
+                this.textContent = 'Alto Contraste';
+            }
+        });
+    </script>
+</body>
+</html>

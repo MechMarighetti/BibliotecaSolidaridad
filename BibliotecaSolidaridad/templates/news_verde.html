@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter Noviembre - Biblioteca de la Solidaridad</title>
+    <style>
+        /* RESET Y ESTILOS BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        .newsletter-container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, #4CAF50, #81C784, #AED581, #81C784, #4CAF50);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .month-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* CONTENIDO */
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: #2E7D32;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #C8E6C9;
+            font-weight: 600;
+        }
+
+        .intro {
+            font-size: 16px;
+            margin-bottom: 25px;
+            line-height: 1.7;
+            background: #E8F5E9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        /* RECOMENDACIONES */
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .book-card {
+            display: flex;
+            background: #F1F8E9;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .book-cover {
+            width: 100px;
+            height: 140px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .book-info {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .book-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2E7D32;
+        }
+
+        .book-author {
+            font-size: 14px;
+            color: #388E3C;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .book-description {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .tags {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tag-booker {
+            background: #FF9800;
+            color: white;
+        }
+
+        .tag-premio {
+            background: #9C27B0;
+            color: white;
+        }
+
+        .tag-nuevo {
+            background: #2196F3;
+            color: white;
+        }
+
+        /* AUTORES DESTACADOS */
+        .authors-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .author-card {
+            display: flex;
+            align-items: center;
+            background: #E8F5E9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+        }
+
+        .author-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 3px solid #4CAF50;
+        }
+
+        .author-info h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: #2E7D32;
+        }
+
+        .author-info p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* AUTORES ARGENTINOS */
+        .argentine-authors {
+            background: #F1F8E9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .author-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .author-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .author-flag {
+            width: 30px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: #2E7D32;
+        }
+
+        /* INFORMACIÓN BIBLIOTECA */
+        .library-info {
+            background: #E8F5E9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .info-text {
+            font-size: 14px;
+        }
+
+        .summer-notice {
+            background: #FFF8E1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #FFC107;
+        }
+
+        /* CTA */
+        .cta-section {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .cta-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #4CAF50;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #2C2C2C;
+            color: #DDD;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer-links {
+            margin: 15px 0;
+        }
+
+        .footer-links a {
+            color: #81C784;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .forward-notice {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .signature {
+            margin-top: 20px;
+            font-style: italic;
+            color: #AAA;
+        }
+
+        /* RESPONSIVE */
+        @media (min-width: 600px) {
+            .recommendation-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .authors-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="newsletter-container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>Biblioteca de la Solidaridad</h1>
+            <p>Noviembre 2023 - La primavera de la lectura</p>
+            <div class="month-badge">Edición de Primavera</div>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="content">
+            <!-- INTRODUCCIÓN -->
+            <div class="section">
+                <div class="intro">
+                    <p>¡La primavera está en su esplendor y con ella florecen nuevas lecturas! En esta edición, te traemos recomendaciones especiales, autores argentinos destacados y las novedades literarias que no podés perderte. Además, recordá que se acercan los préstamos de verano con plazos más extensos.</p>
+                </div>
+            </div>
+
+            <!-- RECOMENDACIONES DE LIBROS -->
+            <div class="section">
+                <h2 class="section-title">📚 Libros Recomendados del Mes</h2>
+                <div class="recommendation-grid">
+                    <div class="book-card">
+                        <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Portada de libro" class="book-cover">
+                        <div class="book-info">
+                            <h3 class="book-title">Los siete maridos de Evelyn Hugo</h3>
+                            <p class="book-author">Taylor Jenkins Reid</p>
+                            <p class="book-description">Una novela fascinante sobre fama, ambición y los sacrificios que hacemos por amor.</p>
+                            <div class="tags">
+                                <span class="tag tag-nuevo">NUEVO EN CATÁLOGO</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="book-card">
+                        <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Portada de libro" class="book-cover">
+                        <div class="book-info">
+                            <h3 class="book-title">Klara y el Sol</h3>
+                            <p class="book-author">Kazuo Ishiguro</p>
+                            <p class="book-description">Una conmovedora historia sobre la inteligencia artificial y lo que significa ser humano.</p>
+                            <div class="tags">
+                                <span class="tag tag-booker">BOOKER PRIZE NOMINADO</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="book-card">
+                        <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Portada de libro" class="book-cover">
+                        <div class="book-info">
+                            <h3 class="book-title">El hombre en busca de sentido</h3>
+                            <p class="book-author">Viktor Frankl</p>
+                            <p class="book-description">Un clásico atemporal sobre la resiliencia humana en las condiciones más extremas.</p>
+                            <div class="tags">
+                                <span class="tag tag-premio">CLÁSICO IMPRESCINDIBLE</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="book-card">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Portada de libro" class="book-cover">
+                        <div class="book-info">
+                            <h3 class="book-title">Proyecto Hail Mary</h3>
+                            <p class="book-author">Andy Weir</p>
+                            <p class="book-description">Una aventura espacial épica del autor de "El marciano".</p>
+                            <div class="tags">
+                                <span class="tag tag-premio">PREMIOS GOODREADS 2021</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUTORES DESTACADOS -->
+            <div class="section">
+                <h2 class="section-title">✍️ Autores para Descubrir</h2>
+                <div class="authors-container">
+                    <div class="author-card">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Retrato de autor" class="author-avatar">
+                        <div class="author-info">
+                            <h3>Mariana Enríquez</h3>
+                            <p>Periodista y escritora argentina conocida por sus relatos de terror y ficción contemporánea.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="author-card">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Retrato de autor" class="author-avatar">
+                        <div class="author-info">
+                            <h3>Ocean Vuong</h3>
+                            <p>Poeta y novelista estadounidense de origen vietnamita, conocido por su prosa lírica y emotiva.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUTORES ARGENTINOS -->
+            <div class="section">
+                <h2 class="section-title">🇦🇷 Autores Argentinos Destacados</h2>
+                <div class="argentine-authors">
+                    <p>Este mes destacamos a estos talentosos autores argentinos que han sido nominados a importantes premios internacionales:</p>
+                    
+                    <div class="author-list">
+                        <div class="author-item">
+                            <img src="https://flagcdn.com/w40/ar.png" class="author-flag" alt="Bandera Argentina">
+                            <div>
+                                <div class="author-name">Samanta Schweblin</div>
+                                <div style="font-size: 12px; color: #666;">Nominada al Booker International</div>
+                            </div>
+                        </div>
+                        
+                        <div class="author-item">
+                            <img src="https://flagcdn.com/w40/ar.png" class="author-flag" alt="Bandera Argentina">
+                            <div>
+                                <div class="author-name">Mariana Enríquez</div>
+                                <div style="font-size: 12px; color: #666;">Nominada al Booker International</div>
+                            </div>
+                        </div>
+                        
+                        <div class="author-item">
+                            <img src="https://flagcdn.com/w40/ar.png" class="author-flag" alt="Bandera Argentina">
+                            <div>
+                                <div class="author-name">César Aira</div>
+                                <div style="font-size: 12px; color: #666;">Finalista del Man Booker International</div>
+                            </div>
+                        </div>
+                        
+                        <div class="author-item">
+                            <img src="https://flagcdn.com/w40/ar.png" class="author-flag" alt="Bandera Argentina">
+                            <div>
+                                <div class="author-name">Claudia Piñeiro</div>
+                                <div style="font-size: 12px; color: #666;">Premio Sor Juana Inés de la Cruz</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIOS BOOKER -->
+            <div class="section">
+                <h2 class="section-title">🏆 Libros Nominados al Booker Prize 2023</h2>
+                <div class="intro">
+                    <p>Este año el Booker Prize ha destacado obras extraordinarias de diversas partes del mundo. Te contamos cuáles están disponibles en nuestra biblioteca:</p>
+                </div>
+                <ul style="margin-left: 20px; margin-top: 15px;">
+                    <li style="margin-bottom: 10px;"><strong>Si esto es un hombre</strong> - Primo Levi</li>
+                    <li style="margin-bottom: 10px;"><strong>El velo negro</strong> - Hernán Díaz</li>
+                    <li style="margin-bottom: 10px;"><strong>Estación once</strong> - Emily St. John Mandel</li>
+                    <li style="margin-bottom: 10px;"><strong>Piel</strong> - Fiona Mozley</li>
+                </ul>
+            </div>
+
+            <!-- INFORMACIÓN DE LA BIBLIOTECA -->
+            <div class="section">
+                <h2 class="section-title">ℹ️ Información de la Biblioteca</h2>
+                <div class="library-info">
+                    <p>Recordá que en nuestra biblioteca podés solicitar libros en préstamo de forma gratuita. Los préstamos son por 15 días, con posibilidad de renovación por 15 días más si no hay reservas.</p>
+                    
+                    <div class="summer-notice">
+                        <p><strong>¡Atención! Próximamente: Préstamos de Verano</strong><br>
+                        A partir de diciembre, los préstamos serán por 30 días para que disfrutes de tus lecturas durante las vacaciones.</p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">📱</div>
+                            <div class="info-text">Solicitá libros desde nuestra app o página web</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">⏱️</div>
+                            <div class="info-text">Retirá en 24-48 horas hábiles</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📅</div>
+                            <div class="info-text">Préstamo por 15 días renovables</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🌟</div>
+                            <div class="info-text">Sistema de puntaje por devolución a tiempo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CALL TO ACTION -->
+            <div class="cta-section">
+                <h2 class="cta-title">¿Listo para tu próxima lectura primaveral?</h2>
+                <p>No esperes más, solicitá tu próximo libro en préstamo ahora mismo</p>
+                <a href="#" class="cta-button">Solicitar un Préstamo</a>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Biblioteca de la Solidaridad - "Si lees, tenemos el libro para vos"</p>
+            
+            <div class="footer-links">
+                <a href="#">Nuestra Web</a> | 
+                <a href="#">Catálogo Online</a> | 
+                <a href="#">Horarios y Sedes</a> | 
+                <a href="#">Contacto</a>
+            </div>
+            
+            <div class="forward-notice">
+                <p><strong>¿Te reenviaron este correo?</strong> Si no sos socio de nuestra biblioteca, podés asociarte de forma gratuita y comenzar a disfrutar de todos nuestros servicios. <a href="#" style="color: #81C784;">Hacé click aquí para asociarte</a>.</p>
+            </div>
+            
+            <p>Sentite libre de reenviar este newsletter a quien creas que pueda interesarle.</p>
+            
+            <div class="signature">
+                <p>Con el cariño de siempre,</p>
+                <p>El equipo de bibliotecarios de la Biblioteca de la Solidaridad</p>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                Si no deseás recibir más nuestros newsletters, <a href="#" style="color: #AAA;">podés desuscribirte aquí</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

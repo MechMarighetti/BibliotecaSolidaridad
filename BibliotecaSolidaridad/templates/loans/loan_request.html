@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Solicitar un libro en préstamo{% endblock %}
+{% block content %}
+x
+<div class="container mt-5">
+    <h2 class="mb-4"><i class="fas fa-book-reader"></i> Solicitar un Libro en Préstamo</h2>
+    <form method="post" action="{% url 'submit_loan_request' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="book" class="form-label">Selecciona el libro que deseas solicitar:</label>
+            <select class="form-select" id="book" name="book_id" required>
+                {% for book in available_books %}
+                    <option value="{{ book.id }}">{{ book.title }} - {{ book.author }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="loan_duration" class="form-label">Duración del préstamo (días):</label>
+            <input type="number" class="form-control" id="loan_duration" name="loan_duration" min="1" max="30" value="14" required>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Enviar Solicitud</button>
+    </form>
+{% endblock %}

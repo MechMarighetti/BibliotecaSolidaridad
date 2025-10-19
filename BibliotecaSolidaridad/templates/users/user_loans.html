@@ -1,0 +1,39 @@
+{% extends base.html %}
+{% load static %}
+{% block title %}Préstamos del Usuario - Biblioteca de la Solidaridad{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4"><i class="fas fa-book-reader"></i> Mis Préstamos</h2>
+    {% if loans %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Libro</th>
+                    <th>Fecha de Préstamo</th>
+                    <th>Fecha de Devolución</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in loans %}
+                <tr>
+                    <td>{{ loan.book.title }}</td>
+                    <td>{{ loan.loan_date|date:"d/m/Y" }}</td>
+                    <td>{{ loan.return_date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if loan.is_returned %}
+                            <span class="badge bg-success">Devuelto</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Activo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No tienes préstamos activos en este momento.</p>
+    {% endif %}
+</div>
+{% endblock %}

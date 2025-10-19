@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mi Perfil - Biblioteca{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Información del Usuario -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">Mi Perfil</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    <h5>{{ user.get_full_name }}</h5>
+                    <p class="text-muted">{{ user.get_role_display }}</p>
+                    
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="text-primary">Puntuación</h6>
+                        <div class="display-4 fw-bold {% if user.score >= 4 %}text-success{% elif user.score >= 3 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ user.score }}
+                        </div>
+                        <small class="text-muted">/ 5.0</small>
+                    </div>
+
+                    <div class="border rounded p-3">
+                        <h6 class="text-primary">Límite de Préstamos</h6>
+                        <div class="h4 fw-bold text-info">{{ user.get_loan_limit }}</div>
+                        <small class="text-muted">libros simultáneos</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Información de Contacto</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>DNI:</strong> {{ user.dni }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Teléfono:</strong> {{ user.phone }}</p>
+                    <p><strong>Dirección:</strong> {{ user.address }}</p>
+                    <p><strong>Miembro desde:</strong> {{ user.date_joined|date:"d M Y" }}</p>
+                    
+                    {% if user.profile.virtual_card_id %}
+                    <div class="text-center mt-3">
+                        <div class="border rounded p-3 bg-light">
+                            <h6>Carnet Virtual</h6>
+                            <code>{{ user.profile.virtual_card_id }}</code>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="col-md-8">
+            <!-- Libros Favoritos -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Mis Libros Favoritos</h5>
+                    <a href="{% url 'book_search' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-search"></i> Buscar Más Libros
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for favorite in user_favorites %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="row g-0">
+                                    <div class="col-4">
+                                        {% if favorite.book.cover_url %}
+                                        <img src="{{ favorite.book.cover_url }}" class="img-fluid rounded-start" 
+                                             alt="{{ favorite.book.title }}" style="height: 100px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body py-2">
+                                            <h6 class="card-title">{{ favorite.book.title|truncatewords:4 }}</h6>
+                                            <p class="card-text small text-muted">{{ favorite.book.author }}</p>
+                                            <a href="{% url 'book_detail' favorite.book.id %}" class="btn btn-sm btn-outline-primary">
+                                                Ver Detalles
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center">
+                            <p class="text-muted">Aún no tienes libros favoritos.</p>
+                            <a href="{% url 'book_search' %}" class="btn btn-primary">
+                                <i class="fas fa-book"></i> Explorar Libros
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Préstamos Activos -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Mis Préstamos Activos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Libro</th>
+                                    <th>Fecha Préstamo</th>
+                                    <th>Vencimiento</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in active_loans %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ loan.book.title }}</strong><br>
+                                        <small class="text-muted">{{ loan.book.author }}</small>
+                                    </td>
+                                    <td>{{ loan.loan_date|date:"d M Y" }}</td>
+                                    <td>
+                                        {{ loan.due_date|date:"d M Y" }}
+                                        {% if loan.is_overdue %}
+                                        <span class="badge bg-danger">Vencido</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ loan.status_color }}">{{ loan.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if loan.can_renew %}
+                                        <a href="{% url 'renew_loan' loan.id %}" class="btn btn-sm btn-outline-primary">
+                                            Renovar
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        No tienes préstamos activos en este momento.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial de Préstamos -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Historial de Préstamos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Libro</th>
+                                    <th>Fecha</th>
+                                    <th>Devuelto</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in loan_history %}
+                                <tr>
+                                    <td>{{ loan.book.title }}</td>
+                                    <td>{{ loan.loan_date|date:"d M Y" }}</td>
+                                    <td>
+                                        {% if loan.return_date %}
+                                        {{ loan.return_date|date:"d M Y" }}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ loan.status_color }}">{{ loan.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No hay historial de préstamos.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

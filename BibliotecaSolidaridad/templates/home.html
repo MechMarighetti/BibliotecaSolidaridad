@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Biblioteca de la Solidaridad{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold">Bienvenido a la Biblioteca de la Solidaridad</h1>
+                <p class="lead">Un espacio donde el conocimiento se comparte y la lectura nos une.</p>
+                {% if not user.is_authenticated %}
+                <div class="mt-4">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-user-plus"></i> Asociate Hoy
+                    </a>
+                    <a href="{% url 'book_search' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-search"></i> Buscar Libros
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6">
+                <img src="{% static 'images/library-hero.png' %}" alt="Biblioteca" class="img-fluid" >
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="stats-card p-3">
+                    <h3 class="text-primary">{{ stats.total_books }}</h3>
+                    <p class="text-muted">Libros Disponibles</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card p-3">
+                    <h3 class="text-success">{{ stats.active_members }}</h3>
+                    <p class="text-muted">Socios Activos</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card p-3">
+                    <h3 class="text-info">{{ stats.active_loans }}</h3>
+                    <p class="text-muted">Préstamos Activos</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card p-3">
+                    <h3 class="text-warning">{{ stats.categories }}</h3>
+                    <p class="text-muted">Categorías</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Libros Recomendados -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="text-center">Libros Recomendados</h2>
+                <p class="text-center text-muted">Descubre nuestras últimas adquisiciones y libros más populares</p>
+            </div>
+        </div>
+        <div class="row">
+            {% for book in recommended_books %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card book-card h-100">
+                    {% if book.cover_url %}
+                    <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-book fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title">{{ book.title|truncatewords:5 }}</h6>
+                        <p class="card-text text-muted small">{{ book.author|truncatewords:3 }}</p>
+                        <div class="mt-auto">
+                            <div class="mb-2">
+                                {% for category in book.categories.all|slice:":2" %}
+                                <span class="badge bg-primary me-1">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'book_detail' book.id %}" class="btn btn-sm btn-outline-primary w-100">
+                                Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No hay libros recomendados disponibles.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Sección Asociate -->
+{% if not user.is_authenticated %}
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2>¿Por qué asociarte?</h2>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Acceso a miles de libros</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Préstamos por 15 días renovables</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Reserva online de libros</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Participa en clubes de lectura</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Acceso a eventos exclusivos</li>
+                </ul>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-user-plus"></i> Asociate Gratis
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <img src="{% static 'images/benefits.png' %}" alt="Beneficios" class="img-fluid rounded"
+                     onerror="this.src='https://via.placeholder.com/500x300/28a745/ffffff?text=Beneficios+para+Socios'">
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Autores Destacados -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Autores Destacados</h2>
+        <div class="row">
+            {% for author in featured_authors %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">{{ author.name }}</h5>
+                        <p class="card-text text-muted">{{ author.books_count }} libros en nuestra biblioteca</p>
+                        <a href="{% url 'book_search' %}?q={{ author.name|urlencode }}" class="btn btn-sm btn-outline-primary">
+                            Ver Libros
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Próximamente más autores destacados.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard - Biblioteca{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+            <p class="text-muted">Estadísticas y métricas de la biblioteca</p>
+        </div>
+    </div>
+
+    <!-- KPIs Principales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Préstamos Activos
+                            </div>
+                            <div class="h5 mb-0">{{ kpis.active_loans }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book-open fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Socios Activos
+                            </div>
+                            <div class="h5 mb-0">{{ kpis.active_members }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Préstamos Vencidos
+                            </div>
+                            <div class="h5 mb-0">{{ kpis.overdue_loans }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Libros Disponibles
+                            </div>
+                            <div class="h5 mb-0">{{ kpis.available_books }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Libros Más Prestados -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    Libros Más Prestados
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Libro</th>
+                                    <th>Autor</th>
+                                    <th>Préstamos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in popular_books %}
+                                <tr>
+                                    <td>{{ book.title }}</td>
+                                    <td>{{ book.author }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ book.loan_count }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas de Morosidad -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie me-1"></i>
+                    Estadísticas de Morosidad
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h4 class="text-primary">{{ stats.avg_overdue_days|default:0 }}</h4>
+                                <small>Días promedio de mora</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h4 class="text-warning">{{ stats.total_overdue_loans }}</h4>
+                                <small>Préstamos vencidos</small>
+                            </div>
+                        </div>
+                                 
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mejores Usuarios -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-trophy me-1"></i>
+                    Ranking de Mejores Usuarios
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Usuario</th>
+                                    <th>Puntuación</th>
+                                    <th>Préstamos Completados</th>
+                                    <th>Reseñas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in top_users %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ user.get_full_name }}</strong><br>
+                                        <small class="text-muted">{{ user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if user.score >= 4.5 %}success{% elif user.score >= 4.0 %}info{% elif user.score >= 3.0 %}warning{% else %}danger{% endif %}">
+                                            {{ user.score }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.completed_loans }}</td>
+                                    <td>{{ user.review_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categorías Populares -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-tags me-1"></i>
+                    Categorías Más Populares
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for category in popular_categories %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5>{{ category.name }}</h5>
+                                    <p class="text-muted">{{ category.book_count }} libros</p>
+                                    <span class="badge bg-primary">{{ category.loan_count }} préstamos</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

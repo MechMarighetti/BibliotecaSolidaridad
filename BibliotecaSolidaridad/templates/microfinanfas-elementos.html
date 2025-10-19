@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microfinanzas - Sistema de Diseño</title>
+    <style>
+        /* ===== VARIABLES CSS ===== */
+        :root {
+            /* Colores principales */
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary: #f72585;
+            --accent: #4cc9f0;
+            --success: #4ade80;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            
+            /* Colores neutrales */
+            --neutral-50: #f8fafc;
+            --neutral-100: #f1f5f9;
+            --neutral-200: #e2e8f0;
+            --neutral-300: #cbd5e1;
+            --neutral-400: #94a3b8;
+            --neutral-500: #64748b;
+            --neutral-600: #475569;
+            --neutral-700: #334155;
+            --neutral-800: #1e293b;
+            --neutral-900: #0f172a;
+            
+            /* Gradientes */
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary) 0%, var(--warning) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
+            --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            
+            /* Tipografía */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --font-heading: 'Plus Jakarta Sans', var(--font-family);
+            
+            /* Espaciado */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            
+            /* Bordes */
+            --radius-sm: 0.5rem;
+            --radius-md: 1rem;
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
+            
+            /* Sombras */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+            
+            /* Transiciones */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        /* ===== RESET Y ESTILOS BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--neutral-800);
+            background-color: var(--neutral-50);
+            padding: var(--space-md);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--space-sm);
+            color: var(--neutral-900);
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.75rem; }
+        h4 { font-size: 1.5rem; }
+        h5 { font-size: 1.25rem; }
+        h6 { font-size: 1rem; }
+
+        p {
+            margin-bottom: var(--space-sm);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+        }
+
+        /* ===== CONTENEDOR PRINCIPAL ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md) 0;
+            margin-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            gap: var(--space-md);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .nav-link:hover {
+            background-color: var(--neutral-100);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--neutral-700);
+            border: 2px solid var(--neutral-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--neutral-100);
+            border-color: var(--neutral-400);
+        }
+
+        .btn-sm {
+            padding: var(--space-xs) var(--space-sm);
+            font-size: 0.85rem;
+        }
+
+        .btn-lg {
+            padding: var(--space-md) var(--space-lg);
+            font-size: 1.1rem;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--gradient-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-gradient {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .card-gradient h3, 
+        .card-gradient h4,
+        .card-gradient p {
+            color: white;
+        }
+
+        .card-secondary {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+
+        .card-secondary h3, 
+        .card-secondary h4,
+        .card-secondary p {
+            color: white;
+        }
+
+        .card-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .card-success h3, 
+        .card-success h4,
+        .card-success p {
+            color: white;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            font-size: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+        }
+
+        .card-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ===== BENTO GRID ===== */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .bento-item {
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .bento-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .bento-wide {
+            grid-column: span 2;
+        }
+
+        .bento-tall {
+            grid-row: span 2;
+        }
+
+        /* ===== SISTEMA DE GRIDS ===== */
+        .grid {
+            display: grid;
+            gap: var(--space-md);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        /* ===== FORMULARIOS ===== */
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-sm);
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: var(--space-sm);
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            background-color: white;
+            transition: all var(--transition-fast);
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        /* ===== ESTADÍSTICAS Y MÉTRICAS ===== */
+        .metric-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--neutral-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            margin-top: var(--space-xs);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--error);
+        }
+
+        /* ===== LISTAS ===== */
+        .list {
+            list-style: none;
+        }
+
+        .list-item {
+            padding: var(--space-sm);
+            border-bottom: 1px solid var(--neutral-200);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background-color: var(--neutral-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        /* ===== ALERTAS ===== */
+        .alert {
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+        }
+
+        .alert-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .alert-success {
+            background-color: rgba(74, 222, 128, 0.1);
+            border-left: 4px solid var(--success);
+            color: var(--neutral-800);
+        }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            color: var(--neutral-800);
+        }
+
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--error);
+            color: var(--neutral-800);
+        }
+
+        .alert-info {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-left: 4px solid var(--primary);
+            color: var(--neutral-800);
+        }
+
+        /* ===== MODO ALTO CONTRASTE ===== */
+        .high-contrast {
+            --neutral-50: #ffffff;
+            --neutral-100: #f0f0f0;
+            --neutral-200: #d0d0d0;
+            --neutral-300: #a0a0a0;
+            --neutral-400: #707070;
+            --neutral-500: #505050;
+            --neutral-600: #303030;
+            --neutral-700: #202020;
+            --neutral-800: #101010;
+            --neutral-900: #000000;
+            
+            --primary: #0000ff;
+            --primary-light: #3333ff;
+            --primary-dark: #0000cc;
+            --secondary: #ff00ff;
+            --accent: #00ffff;
+            --success: #00ff00;
+            --warning: #ffff00;
+            --error: #ff0000;
+            
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary) 0%, var(--warning) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
+            --gradient-card: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
+            
+            color: var(--neutral-900);
+            background-color: var(--neutral-50);
+        }
+
+        .high-contrast .card {
+            border: 2px solid var(--neutral-800);
+        }
+
+        .high-contrast .form-input,
+        .high-contrast .form-select {
+            border: 2px solid var(--neutral-800);
+        }
+
+        /* ===== UTILIDADES ===== */
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+
+        .mb-xs { margin-bottom: var(--space-xs); }
+        .mb-sm { margin-bottom: var(--space-sm); }
+        .mb-md { margin-bottom: var(--space-md); }
+        .mb-lg { margin-bottom: var(--space-lg); }
+        .mb-xl { margin-bottom: var(--space-xl); }
+
+        .mt-xs { margin-top: var(--space-xs); }
+        .mt-sm { margin-top: var(--space-sm); }
+        .mt-md { margin-top: var(--space-md); }
+        .mt-lg { margin-top: var(--space-lg); }
+        .mt-xl { margin-top: var(--space-xl); }
+
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+
+        .hidden { display: none; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bento-wide, .bento-tall {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+            
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+            
+            .nav {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">MF</div>
+                MicroFinanzas
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-link active">Inicio</a>
+                <a href="#" class="nav-link">Préstamos</a>
+                <a href="#" class="nav-link">Ahorros</a>
+                <a href="#" class="nav-link">Inversiones</a>
+                <a href="#" class="nav-link">Educación</a>
+            </nav>
+            <div class="flex">
+                <button class="btn btn-outline btn-sm" id="toggleContrast">Alto Contraste</button>
+            </div>
+        </header>
+
+        <section class="mb-xl">
+            <h1 class="text-center">Sistema de Diseño para Microfinanzas</h1>
+            <p class="text-center">Un sistema moderno, accesible y gender-neutral para aplicaciones financieras</p>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Estadísticas</h2>
+            <div class="grid grid-4">
+                <div class="metric-card">
+                    <div class="metric-value">$12,450</div>
+                    <div class="metric-label">Préstamos Activos</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 12%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">$8,230</div>
+                    <div class="metric-label">Ahorros Totales</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 5%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">94%</div>
+                    <div class="metric-label">Tasa de Éxito</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 2%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1,254</div>
+                    <div class="metric-label">Clientes Activos</div>
+                    <div class="metric-trend trend-up">
+                        <span>↑ 8%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Bento Grid</h2>
+            <div class="bento-grid">
+                <div class="bento-item card-gradient">
+                    <div class="card-icon">💡</div>
+                    <h3>Aprende Todo lo que Puedas</h3>
+                    <p>Capacitación continua para mejorar tus habilidades financieras y de negocio.</p>
+                </div>
+                <div class="bento-item">
+                    <h3>Piensa en tus Clientes</h3>
+                    <p>Conoce las necesidades de tus clientes para ofrecer soluciones efectivas.</p>
+                    <button class="btn btn-primary mt-md">Saber más</button>
+                </div>
+                <div class="bento-item bento-wide card-secondary">
+                    <h3>Enamórate de tu Proyecto</h3>
+                    <p>La pasión por tu trabajo es el motor que impulsa el éxito a largo plazo.</p>
+                    <div class="flex-between mt-md">
+                        <button class="btn btn-outline">Compartir</button>
+                        <button class="btn btn-primary">Inspírate</button>
+                    </div>
+                </div>
+                <div class="bento-item bento-tall card-success">
+                    <div class="card-icon">💰</div>
+                    <h3>Controla tus Finanzas</h3>
+                    <p>Gestiona tus ingresos y gastos para mantener un equilibrio financiero saludable.</p>
+                    <ul class="list mt-md">
+                        <li class="list-item">
+                            <div class="list-icon">1</div>
+                            <div>Establece un presupuesto</div>
+                        </li>
+                        <li class="list-item">
+                            <div class="list-icon">2</div>
+                            <div>Monitorea tus gastos</div>
+                        </li>
+                        <li class="list-item">
+                            <div class="list-icon">3</div>
+                            <div>Planifica para el futuro</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bento-item">
+                    <h3>Establece Metas</h3>
+                    <p>Define objetivos claros y medibles para guiar tu progreso financiero.</p>
+                    <button class="btn btn-secondary mt-md">Establecer metas</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Cards de Productos</h2>
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Préstamos para Emprendedores</h4>
+                        <span class="card-badge">Popular</span>
+                    </div>
+                    <p>Financiamiento para iniciar o expandir tu negocio con tasas competitivas.</p>
+                    <div class="flex-between mt-md">
+                        <div>
+                            <strong>Tasa desde 8%</strong>
+                        </div>
+                        <button class="btn btn-primary btn-sm">Aplicar</button>
+                    </div>
+                </div>
+                <div class="card card-gradient">
+                    <div class="card-header">
+                        <h4>Cuentas de Ahorro</h4>
+                    </div>
+                    <p>Gana intereses mientras ahorras para tus metas futuras.</p>
+                    <div class="flex-between mt-md">
+                        <div>
+                            <strong>Hasta 5% de interés</strong>
+                        </div>
+                        <button class="btn btn-outline btn-sm">Abrir cuenta</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Seguros</h4>
+                        <span class="card-badge">Nuevo</span>
+                    </div>
+                    <p>Protege tu negocio y tu familia con nuestros planes de seguro.</p>
+                    <div class="flex-between mt-md">
+                        <div>
+                            <strong>Desde $15/mes</strong>
+                        </div>
+                        <button class="btn btn-primary btn-sm">Cotizar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Alertas y Notificaciones</h2>
+            <div class="grid grid-2">
+                <div class="alert alert-success">
+                    <div class="alert-icon">✅</div>
+                    <div>
+                        <strong>¡Préstamo aprobado!</strong>
+                        <p>Tu solicitud de préstamo ha sido aprobada. Los fondos estarán disponibles en 24 horas.</p>
+                    </div>
+                </div>
+                <div class="alert alert-warning">
+                    <div class="alert-icon">⚠️</div>
+                    <div>
+                        <strong>Vencimiento próximo</strong>
+                        <p>Tu próximo pago vence en 3 días. Programa tu pago a tiempo.</p>
+                    </div>
+                </div>
+                <div class="alert alert-error">
+                    <div class="alert-icon">❌</div>
+                    <div>
+                        <strong>Error de procesamiento</strong>
+                        <p>Hubo un problema al procesar tu último pago. Por favor, intenta nuevamente.</p>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <div class="alert-icon">ℹ️</div>
+                    <div>
+                        <strong>Nueva funcionalidad</strong>
+                        <p>Ahora puedes realizar transferencias entre cuentas de forma instantánea.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-xl">
+            <h2>Formulario de Contacto</h2>
+            <div class="grid grid-2">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" for="name">Nombre completo</label>
+                        <input type="text" id="name" class="form-input" placeholder="Ingresa tu nombre">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="email">Correo electrónico</label>
+                        <input type="email" id="email" class="form-input" placeholder="ejemplo@correo.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="service">Servicio de interés</label>
+                        <select id="service" class="form-select">
+                            <option value="">Selecciona un servicio</option>
+                            <option value="loan">Préstamos</option>
+                            <option value="savings">Ahorros</option>
+                            <option value="investment">Inversiones</option>
+                            <option value="insurance">Seguros</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" for="message">Mensaje</label>
+                        <textarea id="message" class="form-input" rows="6" placeholder="Describe tu consulta o solicitud"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-lg">Enviar mensaje</button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-xl mb-md">
+            <p>© 2023 MicroFinanzas. Todos los derechos reservados.</p>
+            <p class="mt-xs">
+                <a href="#">Términos de servicio</a> | 
+                <a href="#">Política de privacidad</a> | 
+                <a href="#">Contacto</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle para modo alto contraste
+        document.getElementById('toggleContrast').addEventListener('click', function() {
+            document.body.classList.toggle('high-contrast');
+            
+            // Cambiar texto del botón
+            if (document.body.classList.contains('high-contrast')) {
+                this.textContent = 'Contraste Normal';
+            } else {
+                this.textContent = 'Alto Contraste';
+            }
+        });
+    </script>
+</body>
+</html>
