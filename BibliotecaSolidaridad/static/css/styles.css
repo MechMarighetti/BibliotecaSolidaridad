@@ -1,12 +1,29 @@
-        .navbar-brand {
+:root {
+            --orange: #ec6144;
+            --yellow: #ef9f52;
+            --pink: #f4aab6;
+            --light-blue: #9cc0e7;
+            --white: #fff5ed;
+            --blue: #1c4178;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--white);
+            color: var(--blue);
+        }       
+       
+       .navbar-brand {
             font-weight: bold;
             font-size: 1.5rem;
+            color: var(--light-blue);
         }
 
         .footer {
-            background-color: #f8f9fa;
+            background-color: var(--blue);
             padding: 2rem 0;
             margin-top: 3rem;
+            color: var(--white);
         }
 
         .book-card {
@@ -19,13 +36,13 @@
         }
 
         .hero-section {
-            background: linear-gradient(135deg, #79ffcc 0%, #161163 100%);
-            color: rgb(255, 255, 255);
+            background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 100%);
+            color: var(--blue);
             padding: 4rem 0;
         }
 
         .stats-card {
-            border-left: 4px solid #007bff;
+            border-left: 4px solid var(--orange);
         }
 
         .bagel-fat-one-regular {
