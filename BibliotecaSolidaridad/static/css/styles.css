@@ -32,5 +32,31 @@
             font-family: "Bagel Fat One", system-ui;
             font-weight: 100;
             font-style: normal;
-            transition: color 0.3s ease; /* Añade una transición suave */
+            transition: color 0.3s ease;
+            /* Añade una transición suave */
+        }
+
+        .playwrite-au-tas-bold {
+            font-family: "Playwrite AU TAS", cursive;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+        }
+    .playwrite-au-tas-semibold {
+            font-family: "Playwrite AU TAS", cursive;
+            font-optical-sizing: auto;
+            font-weight: 300;
+            font-style: normal;
+        }
+        .playwrite-au-tas-normal {
+            font-family: "Playwrite AU TAS", cursive;
+            font-optical-sizing: auto;
+            font-weight: 200;
+            font-style: normal;
+        }
+        .playwrite-au-tas-light {
+            font-family: "Playwrite AU TAS", cursive;
+            font-optical-sizing: auto;
+            font-weight: 100;
+            font-style: normal;
         }
