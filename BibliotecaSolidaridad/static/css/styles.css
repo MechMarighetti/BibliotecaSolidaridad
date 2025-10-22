@@ -2,23 +2,35 @@
             font-weight: bold;
             font-size: 1.5rem;
         }
+
         .footer {
             background-color: #f8f9fa;
             padding: 2rem 0;
             margin-top: 3rem;
         }
+
         .book-card {
             transition: transform 0.2s;
             height: 100%;
         }
+
         .book-card:hover {
             transform: translateY(-5px);
         }
+
         .hero-section {
             background: linear-gradient(135deg, #79ffcc 0%, #161163 100%);
             color: rgb(255, 255, 255);
             padding: 4rem 0;
         }
+
         .stats-card {
             border-left: 4px solid #007bff;
+        }
+
+        .bagel-fat-one-regular {
+            font-family: "Bagel Fat One", system-ui;
+            font-weight: 100;
+            font-style: normal;
+            transition: color 0.3s ease; /* Añade una transición suave */
         }
