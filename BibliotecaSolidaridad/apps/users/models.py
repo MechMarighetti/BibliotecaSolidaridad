@@ -18,6 +18,17 @@ class User(AbstractUser):
     score = models.FloatField(default=5.0)
     is_active_member = models.BooleanField(default=True)
     suspension_end_date = models.DateField(null=True, blank=True)
+    
+    def get_loan_limit(self):
+        """Calcula el límite de préstamos basado en el puntaje"""
+        if self.score >= 4.5:
+            return 5
+        elif self.score >= 3.0:
+            return 3
+        elif self.score >= 1.0:
+            return 1
+        else:
+            return 0
 
     class Meta:
         db_table = 'users'
