@@ -1,8 +1,4 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block title %}Mi Perfil - Biblioteca{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %}Mi Perfil - Biblioteca{% endblock %} {% block content %}
 <div class="container mt-4">
     <div class="row">
         <!-- Información del Usuario -->
@@ -17,10 +13,12 @@
                     </div>
                     <h5>{{ user.get_full_name }}</h5>
                     <p class="text-muted">{{ user.get_role_display }}</p>
-                    
+
                     <div class="border rounded p-3 mb-3">
                         <h6 class="text-primary">Puntuación</h6>
-                        <div class="display-4 fw-bold {% if user.score >= 4 %}text-success{% elif user.score >= 3 %}text-warning{% else %}text-danger{% endif %}">
+                        <div
+                            class="display-4 fw-bold {% if user.score >= 4 %}text-success{% elif user.score >= 3 %}text-warning{% else %}text-danger{% endif %}"
+                        >
                             {{ user.score }}
                         </div>
                         <small class="text-muted">/ 5.0</small>
@@ -45,7 +43,7 @@
                     <p><strong>Teléfono:</strong> {{ user.phone }}</p>
                     <p><strong>Dirección:</strong> {{ user.address }}</p>
                     <p><strong>Miembro desde:</strong> {{ user.date_joined|date:"d M Y" }}</p>
-                    
+
                     {% if user.profile.virtual_card_id %}
                     <div class="text-center mt-3">
                         <div class="border rounded p-3 bg-light">
@@ -70,14 +68,18 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% for favorite in user_favorites %}
+                        {% for book in user_favorites %}
                         <div class="col-md-6 mb-3">
                             <div class="card h-100">
                                 <div class="row g-0">
                                     <div class="col-4">
-                                        {% if favorite.book.cover_url %}
-                                        <img src="{{ favorite.book.cover_url }}" class="img-fluid rounded-start" 
-                                             alt="{{ favorite.book.title }}" style="height: 100px; object-fit: cover;">
+                                        {% if book.cover_url %}
+                                        <img
+                                            src="{{ book.cover_url }}"
+                                            class="img-fluid rounded-start"
+                                            alt="{{ book.title }}"
+                                            style="height: 100px; object-fit: cover"
+                                        />
                                         {% else %}
                                         <div class="bg-light d-flex align-items-center justify-content-center h-100">
                                             <i class="fas fa-book text-muted"></i>
@@ -86,11 +88,23 @@
                                     </div>
                                     <div class="col-8">
                                         <div class="card-body py-2">
-                                            <h6 class="card-title">{{ favorite.book.title|truncatewords:4 }}</h6>
-                                            <p class="card-text small text-muted">{{ favorite.book.author }}</p>
-                                            <a href="{% url 'book_detail' favorite.book.id %}" class="btn btn-sm btn-outline-primary">
-                                                Ver Detalles
-                                            </a>
+                                            <h6 class="card-title">{{ book.title|truncatewords:4 }}</h6>
+                                            <p class="card-text small text-muted">{{ book.author }}</p>
+                                            <div class="d-flex justify-content-between">
+                                                <a href="{% url 'book_detail' book.id %}" class="btn btn-sm btn-outline-primary">
+                                                    Ver Detalles
+                                                </a>
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'remove_favorite' book.id %}"
+                                                    onsubmit="return confirm('¿Eliminar este libro de tus favoritos?');"
+                                                >
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -99,9 +113,7 @@
                         {% empty %}
                         <div class="col-12 text-center">
                             <p class="text-muted">Aún no tienes libros favoritos.</p>
-                            <a href="{% url 'book_search' %}" class="btn btn-primary">
-                                <i class="fas fa-book"></i> Explorar Libros
-                            </a>
+                            <a href="{% url 'book_search' %}" class="btn btn-primary"> <i class="fas fa-book"></i> Explorar Libros </a>
                         </div>
                         {% endfor %}
                     </div>
@@ -129,13 +141,12 @@
                                 {% for loan in active_loans %}
                                 <tr>
                                     <td>
-                                        <strong>{{ loan.book.title }}</strong><br>
+                                        <strong>{{ loan.book.title }}</strong><br />
                                         <small class="text-muted">{{ loan.book.author }}</small>
                                     </td>
                                     <td>{{ loan.loan_date|date:"d M Y" }}</td>
                                     <td>
-                                        {{ loan.due_date|date:"d M Y" }}
-                                        {% if loan.is_overdue %}
+                                        {{ loan.due_date|date:"d M Y" }} {% if loan.is_overdue %}
                                         <span class="badge bg-danger">Vencido</span>
                                         {% endif %}
                                     </td>
@@ -144,17 +155,13 @@
                                     </td>
                                     <td>
                                         {% if loan.can_renew %}
-                                        <a href="{% url 'renew_loan' loan.id %}" class="btn btn-sm btn-outline-primary">
-                                            Renovar
-                                        </a>
+                                        <a href="{% url 'renew_loan' loan.id %}" class="btn btn-sm btn-outline-primary">Renovar</a>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">
-                                        No tienes préstamos activos en este momento.
-                                    </td>
+                                    <td colspan="5" class="text-center text-muted">No tienes préstamos activos en este momento.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -185,9 +192,7 @@
                                     <td>{{ loan.book.title }}</td>
                                     <td>{{ loan.loan_date|date:"d M Y" }}</td>
                                     <td>
-                                        {% if loan.return_date %}
-                                        {{ loan.return_date|date:"d M Y" }}
-                                        {% else %}
+                                        {% if loan.return_date %} {{ loan.return_date|date:"d M Y" }} {% else %}
                                         <span class="text-muted">-</span>
                                         {% endif %}
                                     </td>
@@ -197,9 +202,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">
-                                        No hay historial de préstamos.
-                                    </td>
+                                    <td colspan="4" class="text-center text-muted">No hay historial de préstamos.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

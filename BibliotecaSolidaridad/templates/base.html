@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,16 +9,19 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Playwrite+AU+TAS:wght@100..400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Playwrite+AU+TAS:wght@100..400&display=swap"
+        rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    
+
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Header -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -25,11 +29,11 @@
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fas fa-book"></i> Biblioteca de la Solidaridad
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -39,43 +43,45 @@
                         <a class="nav-link" href="{% url 'book_search' %}">Buscar Libros</a>
                     </li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">Mi Perfil</a>
-                        </li>
-                        {% if user.role == 'librarian' or user.role == 'admin' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'add_book' %}">Agregar Libro</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'manage_loans' %}">Gestionar Préstamos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                            </li>
-                        {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}">Mi Perfil</a>
+                    </li>
+                    {% if user.role == 'librarian' or user.role == 'admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'add_book' %}">Agregar Libro</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'manage_loans' %}">Gestionar Préstamos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
-                
+
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}">Mi Perfil</a></li>
-                                <li><a class="dropdown-item" href="{% url 'user_loans' %}">Mis Préstamos</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
-                            </ul>
-                        </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user_loans' %}">Mis Préstamos</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
+                        </ul>
+                    </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">Registrarse</a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">Registrarse</a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
@@ -98,7 +104,20 @@
     <main>
         {% block content %}{% endblock %}
     </main>
-
+    <div class="card">
+        <div class="card-body text-center">
+            <h5>📧 Suscríbete a nuestro newsletter</h5>
+            <p>Recibe las últimas novedades de la biblioteca</p>
+            <form method="post" action="{% url 'subscribe_newsletter' %}">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <input type="email" name="email" class="form-control" placeholder="tu.email@ejemplo.com" required>
+                    <button class="btn btn-primary" type="submit">Suscribirse</button>
+                </div>
+            </form>
+            <small class="text-muted">Puedes cancelar la suscripción en cualquier momento.</small>
+        </div>
+    </div>
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -136,10 +155,10 @@
     <!-- Custom JS -->
     <script>
         // Auto-dismiss alerts after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
                 const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(function(alert) {
+                alerts.forEach(function (alert) {
                     const bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
                 });
@@ -148,4 +167,5 @@
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>
