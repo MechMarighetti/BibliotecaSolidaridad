@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.books',
     'apps.loans',
     'apps.dashboard',
+    'apps.newsletter',
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,22 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Configuración de Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mercedesmarighetti@gmail.com'  # Tu email de Gmail
+EMAIL_HOST_PASSWORD = 'xhmo hdnd ijaj dfme'  # La contraseña de 16 caracteres
+DEFAULT_FROM_EMAIL = 'Biblioteca de la Solidaridad <mercedesmarighetti@gmail.com>'
+SERVER_EMAIL = 'mercedesmarighetti@gmail.com'
+
+# Configuración adicional para newsletters
+NEWSLETTER_CONFIG = {
+    'SENDER_NAME': 'Biblioteca de la Solidaridad',
+    'REPLY_TO': 'mercedesmarighetti@gmail.com',
+    'BATCH_SIZE': 50,  # Número de emails por lote
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

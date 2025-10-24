@@ -1,0 +1,49 @@
+{% extends "newsletter/base.html" %}
+
+{% block content %}
+<h2>¡Bienvenido a nuestra comunidad!</h2>
+
+<p>Hola,</p>
+
+<p>Nos alegra mucho darte la bienvenida a la familia de la <strong>Biblioteca de la Solidaridad</strong>. 
+Ahora formas parte de una comunidad apasionada por la lectura y el conocimiento compartido.</p>
+
+<div class="book-card">
+    <h3>🎁 Beneficios exclusivos para socios:</h3>
+    <ul>
+        <li>📖 Acceso a miles de libros</li>
+        <li>🔄 Préstamos por 15 días renovables</li>
+        <li>📱 Reserva online de libros</li>
+        <li>👥 Participación en clubes de lectura</li>
+        <li>📅 Invitaciones a eventos exclusivos</li>
+    </ul>
+</div>
+
+<h3>📚 Libros recomendados esta semana:</h3>
+
+<div class="book-card">
+    <h4>El Principito</h4>
+    <p><strong>Autor:</strong> Antoine de Saint-Exupéry</p>
+    <p>Una obra clásica que todo el mundo debería leer al menos una vez en la vida.</p>
+    <a href="{{ site_url }}/books/1/" class="btn btn-primary">Ver libro</a>
+</div>
+
+<div class="book-card">
+    <h4>Cien años de soledad</h4>
+    <p><strong>Autor:</strong> Gabriel García Márquez</p>
+    <p>La obra maestra del realismo mágico que ha cautivado a generaciones.</p>
+    <a href="{{ site_url }}/books/2/" class="btn btn-primary">Ver libro</a>
+</div>
+
+<p>No dudes en visitarnos cuando quieras. Nuestro horario es:</p>
+<ul>
+    <li>Lunes a Viernes: 8:00 - 20:00</li>
+    <li>Sábados: 9:00 - 14:00</li>
+</ul>
+
+<p>¡Te esperamos!</p>
+
+<p>El equipo de la Biblioteca de la Solidaridad</p>
+
+<a href="{{ site_url }}" class="btn btn-success">Visitar nuestra biblioteca online</a>
+{% endblock %}

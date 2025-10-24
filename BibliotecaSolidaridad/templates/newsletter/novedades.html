@@ -1,0 +1,46 @@
+<!-- templates/newsletter/monthly_news.html -->
+{% extends "newsletter/base.html" %}
+
+{% block content %}
+<h2>📰 Novedades de {{ current_month }}</h2>
+
+<p>Hola lector,</p>
+
+<p>Estas son las novedades y actividades de este mes en nuestra biblioteca:</p>
+
+<div class="book-card">
+    <h3>📖 Nuevas Adquisiciones</h3>
+    <p>Hemos agregado <strong>25 nuevos libros</strong> a nuestro catálogo, incluyendo:</p>
+    <ul>
+        <li><strong>"La Sombra del Viento"</strong> - Carlos Ruiz Zafón</li>
+        <li><strong>"Harry Potter y la piedra filosofal"</strong> - J.K. Rowling</li>
+        <li><strong>"1984"</strong> - George Orwell</li>
+    </ul>
+    <a href="{{ site_url }}/books/search/?q=nuevo" class="btn btn-primary">Ver nuevos libros</a>
+</div>
+
+<div class="book-card">
+    <h3>👥 Clubes de Lectura</h3>
+    <p><strong>Próxima reunión:</strong> 15 de {{ current_month }} - 18:00 hs</p>
+    <p><strong>Libro del mes:</strong> "El Alquimista" - Paulo Coelho</p>
+    <a href="{{ site_url }}/clubs/1/" class="btn btn-success">Unirse al club</a>
+</div>
+
+<div class="book-card">
+    <h3>🎉 Eventos Especiales</h3>
+    <p><strong>Taller de Escritura Creativa:</strong> Todos los miércoles - 16:00 hs</p>
+    <p><strong>Hora del Cuento (niños):</strong> Sábados - 11:00 hs</p>
+    <a href="{{ site_url }}/events/" class="btn btn-primary">Ver todos los eventos</a>
+</div>
+
+<h3>📊 Estadísticas del Mes</h3>
+<ul>
+    <li>📚 <strong>{{ stats.books_loaned }}</strong> libros prestados</li>
+    <li>👥 <strong>{{ stats.new_members }}</strong> nuevos socios</li>
+    <li>⭐ <strong>{{ stats.top_book }}</strong> libro más popular</li>
+</ul>
+
+<p>¡Te esperamos en la biblioteca!</p>
+
+<a href="{{ site_url }}" class="btn btn-success">Explorar el catálogo completo</a>
+{% endblock %}

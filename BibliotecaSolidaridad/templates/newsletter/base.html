@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Biblioteca de la Solidaridad{% endblock %}</title>
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        .content {
+            padding: 30px 20px;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .book-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            background: #fafafa;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .unsubscribe {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📚 Biblioteca de la Solidaridad</h1>
+            <p>Compartiendo conocimiento, creando comunidad</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Biblioteca de la Solidaridad<br>
+            Av. Siempre Viva 123 - Tel: (011) 1234-5678</p>
+            <p>&copy; {{ current_year }} Biblioteca de la Solidaridad. Todos los derechos reservados.</p>
+            
+            <div class="unsubscribe">
+                <p>
+                    Recibes este email porque estás suscrito a nuestro newsletter.<br>
+                    <a href="{{ unsubscribe_url }}">Cancelar suscripción</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
