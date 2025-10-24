@@ -18,16 +18,25 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from apps.books.views import home, book_search
+from apps.users import views as user_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.books.urls')),
+
+    # Aplicaciones principales
+    path('', include('apps.page.urls')),
+    path('books/', include('apps.books.urls')),
     path('users/', include('apps.users.urls')),
     path('loans/', include('apps.loans.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
+
+    # Autenticación
+    path('accounts/login/', user_views.CustomLoginView.as_view(), name='login'),
+    path('accounts/logout/', user_views.CustomLogoutView.as_view(), name='logout'),
+    path('accounts/register/', user_views.RegisterView.as_view(), name='register'),
 ]
 
+# Archivos estáticos y de medios en modo DEBUG
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

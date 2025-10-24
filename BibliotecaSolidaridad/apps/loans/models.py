@@ -1,9 +1,12 @@
 from django.db import models
-
-from django.db import models
 from django.contrib.auth import get_user_model
 from apps.books.models import Book
 User = get_user_model()
+
+class LoanQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(status='active')
+
 
 class Loan(models.Model):
     LOAN_TYPES = (
@@ -25,6 +28,9 @@ class Loan(models.Model):
         ('overdue', 'Vencido'),
         ('lost', 'Perdido')
     ))
+
+    objects = LoanQuerySet.as_manager()
+
     class Meta:
         db_table = 'loans'
         verbose_name = 'Préstamo'
@@ -77,4 +83,3 @@ class LoanRequest(models.Model):
 
     def __str__(self):
         return f"Solicitud de {self.user} - {self.book}"
-
