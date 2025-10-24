@@ -110,7 +110,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mercedesmarighetti@gmail.com'  # Tu email de Gmail
-EMAIL_HOST_PASSWORD = 'xhmo hdnd ijaj dfme'  # La contraseña de 16 caracteres
+EMAIL_HOST_PASSWORD = 'la pass no sirve mas'  # La contraseña de 16 caracteres
 DEFAULT_FROM_EMAIL = 'Biblioteca de la Solidaridad <mercedesmarighetti@gmail.com>'
 SERVER_EMAIL = 'mercedesmarighetti@gmail.com'
 
