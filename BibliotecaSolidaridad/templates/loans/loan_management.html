@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container-fluid mt-4">
     <h1><i class="fas fa-tasks"></i> Gestión de Préstamos</h1>
-    
+
     <!-- Estadísticas Rápidas -->
     <div class="row mb-4">
         <div class="col-md-3">
@@ -48,7 +48,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-clock text-warning"></i> 
+                        <i class="fas fa-clock text-warning"></i>
                         Solicitudes Pendientes de Aprobación
                     </h5>
                 </div>
@@ -65,31 +65,35 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for request in loan_requests %}
+                                {% for loan_request in loan_requests %}
                                 <tr>
+                                    <td>{{ loan_request.user.get_full_name }}</td>
+                                    <td>{{ loan_request.user.email }}</td>
                                     <td>
-                                        <strong>{{ request.user.get_full_name }}</strong><br>
-                                        <small class="text-muted">{{ request.user.email }}</small>
+                                        <strong>{{ loan_request.book.title }}</strong><br>
+                                        <small class="text-muted">{{ loan_request.book.author }}</small>
                                     </td>
+                                    <td>{{ loan_request.request_date|date:"d/m/Y H:i" }}</td>
                                     <td>
-                                        <strong>{{ request.book.title }}</strong><br>
-                                        <small class="text-muted">{{ request.book.author }}</small>
-                                    </td>
-                                    <td>{{ request.request_date|date:"d/m/Y H:i" }}</td>
-                                    <td>
-                                        <form method="post" action="{% url 'approve_loan_request' request.id %}" class="d-inline">
+                                        <form method="post" action="{% url 'approve_loan_request' loan_request.id %}"
+                                            class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-success btn-sm">
                                                 <i class="fas fa-check"></i> Aprobar
                                             </button>
                                         </form>
-                                        <form method="post" action="{% url 'reject_loan_request' request.id %}" class="d-inline">
+                                        <form method="post" action="{% url 'reject_loan_request' loan_request.id %}"
+                                            class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-danger btn-sm">
                                                 <i class="fas fa-times"></i> Rechazar
                                             </button>
                                         </form>
                                     </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No hay solicitudes pendientes</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -103,6 +107,9 @@
                     {% endif %}
                 </div>
             </div>
+            <div>
+                
+            </div>
         </div>
 
         <!-- Préstamos Activos -->
@@ -110,7 +117,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-book-open text-success"></i> 
+                        <i class="fas fa-book-open text-success"></i>
                         Préstamos Activos
                     </h5>
                 </div>
@@ -179,7 +186,7 @@
             <div class="card border-warning">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
-                        <i class="fas fa-exclamation-triangle"></i> 
+                        <i class="fas fa-exclamation-triangle"></i>
                         Préstamos Vencidos
                     </h5>
                 </div>
@@ -209,7 +216,8 @@
                                         <span class="badge bg-danger">{{ loan.days_overdue }} días</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-{% if loan.user.score >= 4 %}success{% elif loan.user.score >= 3 %}warning{% else %}danger{% endif %}">
+                                        <span
+                                            class="badge bg-{% if loan.user.score >= 4 %}success{% elif loan.user.score >= 3 %}warning{% else %}danger{% endif %}">
                                             {{ loan.user.score }}
                                         </span>
                                     </td>

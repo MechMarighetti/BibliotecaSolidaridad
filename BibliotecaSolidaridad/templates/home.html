@@ -23,9 +23,16 @@
                     </a>
                 </div>
                 {% endif %}
+                {% if user.is_authenticated and user.role == 'reader' %}
+                <div class="mt-3">
+                    <a href="{% url 'loans' %}" class="btn btn-outline-light">
+                        <i class="fas fa-hand-holding"></i> Solicitar Préstamo de Libros
+                    </a>
+                </div>
+                {% endif %}
             </div>
             <div class="col-lg-6">
-                <img class="portada" src="{% static 'images/library-hero.png' %}" alt="Biblioteca" class="img-fluid" >
+                <img class="portada" src="{% static 'images/library-hero.png' %}" alt="Biblioteca" class="img-fluid">
             </div>
         </div>
     </div>
@@ -77,9 +84,11 @@
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                 <div class="card book-card h-100">
                     {% if book.cover_url %}
-                    <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" style="height: 200px; object-fit: cover;">
+                    <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}"
+                        style="height: 200px; object-fit: cover;">
                     {% else %}
-                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                        style="height: 200px;">
                         <i class="fas fa-book fa-3x text-white"></i>
                     </div>
                     {% endif %}
@@ -106,6 +115,7 @@
             {% endfor %}
         </div>
     </div>
+
 </section>
 
 <!-- Sección Asociate -->
@@ -117,7 +127,8 @@
                 <h2>¿Por qué asociarte?</h2>
                 <ul class="list-unstyled">
                     <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Acceso a miles de libros</li>
-                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Préstamos por 15 días renovables</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Préstamos por 15 días renovables
+                    </li>
                     <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Reserva online de libros</li>
                     <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Participa en clubes de lectura</li>
                     <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Acceso a eventos exclusivos</li>
@@ -128,7 +139,7 @@
             </div>
             <div class="col-lg-6">
                 <img src="{% static 'images/benefits.png' %}" alt="Beneficios" class="img-fluid rounded"
-                     onerror="this.src='https://via.placeholder.com/500x300/28a745/ffffff?text=Beneficios+para+Socios'">
+                    onerror="this.src='https://via.placeholder.com/500x300/28a745/ffffff?text=Beneficios+para+Socios'">
             </div>
         </div>
     </div>
@@ -147,7 +158,8 @@
                         <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
                         <h5 class="card-title">{{ author.name.0 }}</h5>
                         <p class="card-text text-muted">{{ author.books_count }} libros en nuestra biblioteca</p>
-                        <a href="{% url 'book_search' %}?q={{ author.name|urlencode }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url 'book_search' %}?q={{ author.name|urlencode }}"
+                            class="btn btn-sm btn-outline-primary">
                             Ver Libros
                         </a>
                     </div>

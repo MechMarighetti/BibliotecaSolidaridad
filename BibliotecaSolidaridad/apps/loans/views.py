@@ -69,6 +69,7 @@ class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         Agrega información adicional al contexto del template
         """
         context = super().get_context_data(**kwargs)
+        context['active_loans'] = Loan.objects.filter(status='active').select_related('user', 'book')
         
         # Agregar préstamos activos para referencia
         context['active_loans'] = Loan.objects.filter(
@@ -92,14 +93,15 @@ class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return context
 
 class ApproveLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
+    
     """
     Vista para aprobar una solicitud de préstamo
     """
     def test_func(self):
         return self.request.user.role in ['librarian', 'admin']
     
-    def post(self, request, request_id):
-        loan_request = get_object_or_404(LoanRequest, id=request_id, status='pending')
+    def post(self, request, loan_request_id):
+        loan_request = get_object_or_404(LoanRequest, id=loan_request_id, status='pending')
         
         # Verificar que el libro todavía esté disponible
         if not loan_request.book.available:
@@ -145,7 +147,36 @@ class ApproveLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
         except Exception as e:
             messages.error(request, f'Error al aprobar el préstamo: {str(e)}')
         
-        return redirect('loans_manager')
+        return redirect('manage_loans')
+    
+class ReturnBookView(LoginRequiredMixin, UserPassesTestMixin, View):
+    
+    def test_func(self):
+        return self.request.user.role in ['librarian', 'admin']
+    
+    def post(self, request, loan_id):
+        loan = get_object_or_404(Loan, id=loan_id, status='active')
+        
+        try:
+            # Actualizar el préstamo
+            loan.status = 'returned'
+            loan.return_date = timezone.now().date()
+            loan.save()
+            
+            # Marcar el libro como disponible
+            loan.book.available = True
+            loan.book.save()
+            
+            messages.success(
+                request, 
+                f'Libro "{loan.book.title}" devuelto por {loan.user.get_full_name()}'
+            )
+            
+        except Exception as e:
+            messages.error(request, f'Error al registrar la devolución: {str(e)}')
+        
+        return redirect('manage_loans')
+
 
 class RejectLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
@@ -154,8 +185,8 @@ class RejectLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.role in ['librarian', 'admin']
     
-    def post(self, request, request_id):
-        loan_request = get_object_or_404(LoanRequest, id=request_id, status='pending')
+    def post(self, request, loan_request_id):
+        loan_request = get_object_or_404(LoanRequest, id=loan_request_id, status='pending')
         
         try:
             loan_request.status = 'rejected'
@@ -171,7 +202,7 @@ class RejectLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
         except Exception as e:
             messages.error(request, f'Error al rechazar la solicitud: {str(e)}')
         
-        return redirect('loans_manager')
+        return redirect('manage_loans')
 
 class ReturnBookView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
