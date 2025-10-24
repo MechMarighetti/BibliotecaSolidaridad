@@ -1,175 +1,326 @@
+from datetime import date
 import requests
+from django.views import View
+from django.views.generic import ListView, DetailView, CreateView
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.shortcuts import render
-from django.db.models import Count, Q
-from .models import Book, Category, Review
-from apps.loans.models import Loan
-from apps.users.models import User
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+from django.db.models import Avg
+from django.contrib import messages
 
-def home(request):
-    # Libros recomendados (últimos 8 libros agregados)
-    recommended_books = Book.objects.filter(stock__gt=0).order_by('-created_at')[:8]
-    
-    # Estadísticas para la home
-    stats = {
-        'total_books': Book.objects.filter(stock__gt=0).count(),
-        'active_members': User.objects.filter(is_active_member=True).count(),
-        'active_loans': Loan.objects.filter(status='active').count(),
-        'categories': Category.objects.count(),
-    }
-    
-    # Autores destacados (autores con más libros)
-    featured_authors = Book.objects.values('authors').annotate(
-        books_count=Count('id')
-    ).order_by('-books_count')[:6]
-    
-    # Formatear autores para el template
-    authors_list = []
-    for author in featured_authors:
-        if author['authors']:  # Asegurarse de que el autor no sea None
-            authors_list.append({
-                'name': author['authors'],
-                'books_count': author['books_count']
-            })
-    
-    context = {
-        'recommended_books': recommended_books,
-        'stats': stats,
-        'featured_authors': authors_list,
-    }
-    return render(request, 'home.html', context)
-
-def book_search(request):
-    query = request.GET.get('q', '')
-    results = []
-    if query:
-        results = Book.objects.filter(
-            Q(title__icontains=query) |
-            Q(authors__icontains=query) |
-            Q(categories__name__icontains=query)
-        ).distinct()
-    
-    context = {
-        'query': query,
-        'results': results,
-    }
-    
-    return render(request, 'books/book_search.html', context)
+from .models import Book, Review
+from apps.users.models import UserProfile
 
 
-@require_http_methods(["GET"])
-@csrf_exempt
-def search_openlibrary(request):
-    query = request.GET.get('q', '')
-    if not query:
-        return JsonResponse({'error': 'Query parameter required'}, status=400)
-    
-    try:
-        # Buscar en OpenLibrary API
-        url = f"https://openlibrary.org/search.json?q={query}&limit=10"
-        response = requests.get(url, timeout=10)
-        data = response.json()
-        
-        books = []
-        for doc in data.get('docs', []):
-            book_info = {
-                'title': doc.get('title', ''),
-                'author_name': doc.get('author_name', []),
-                'publish_year': doc.get('first_publish_year', ''),
-                'isbn': doc.get('isbn', []),
-                'description': doc.get('description', ''),
-                'cover_url': f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-M.jpg" if doc.get('cover_i') else None,
-            }
-            books.append(book_info)
-        
-        return JsonResponse({'books': books})
-    
-    except requests.RequestException as e:
-        return JsonResponse({'error': 'Error connecting to OpenLibrary'}, status=500)
-    except Exception as e:
-        return JsonResponse({'error': 'Internal server error'}, status=500)
+class BookSearchView(ListView):
+    model = Book
+    template_name = 'books/book_search.html'
+    context_object_name = 'local_results'
 
-import requests
+    def get_queryset(self):
+        query = self.request.GET.get('q', '').strip()
+        self.query = query
+        self.openlibrary_results = []
 
-def add_book(request):
-    if request.method == 'POST':
+        if not query:
+            return Book.objects.none()
+
+        local_books = Book.objects.search(query)
+        self.openlibrary_results = self._search_openlibrary(query)
+        return local_books
+
+    def _search_openlibrary(self, query):
         try:
-            # Obtener datos del formulario
-            title = request.POST.get('title')
-            authors = request.POST.get('authors')
-            isbn = request.POST.get('isbn')
-            publish_date = request.POST.get('publish_date')
-            stock = request.POST.get('stock', 1)
-            cover_url = request.POST.get('cover_url')
-            available = request.POST.get('available') == 'true'
-            openlibrary_id = request.POST.get('openlibrary_id')
-            
-            # Validar campos requeridos
+            response = requests.get(
+                f"https://openlibrary.org/search.json?q={query}&limit=10", timeout=10
+            )
+            response.raise_for_status()
+            data = response.json()
+            return [
+                {
+                    'title': doc.get('title', ''),
+                    'authors': ", ".join(doc.get('author_name', [])),
+                    'publish_year': doc.get('first_publish_year', ''),
+                    'isbn': ", ".join(doc.get('isbn', [])[:1]) if doc.get('isbn') else '',
+                    'openlibrary_id': (doc.get('edition_key', [None])[0] or doc.get('key')),
+                    'cover_url': (
+                        f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-M.jpg"
+                        if doc.get('cover_i') else None
+                    ),
+                }
+                for doc in data.get('docs', [])
+            ]
+        except Exception:
+            return []
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.query
+        context['openlibrary_results'] = self.openlibrary_results
+        context['searched'] = bool(self.query)
+        context['existing_ids'] = set(Book.objects.values_list('openlibrary_id', flat=True))
+        return context
+
+
+class SearchOpenLibraryView(View):
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+        if not query:
+            return JsonResponse({'error': 'Query parameter required'}, status=400)
+        try:
+            response = requests.get(
+                f"https://openlibrary.org/search.json?q={query}&limit=10", timeout=10
+            )
+            response.raise_for_status()
+            data = response.json()
+            books = [
+                {
+                    'title': doc.get('title', ''),
+                    'author_name': doc.get('author_name', []),
+                    'publish_year': doc.get('first_publish_year', ''),
+                    'isbn': doc.get('isbn', []),
+                    'description': doc.get('description', ''),
+                    'cover_url': (
+                        f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-M.jpg"
+                        if doc.get('cover_i') else None
+                    ),
+                }
+                for doc in data.get('docs', [])
+            ]
+            return JsonResponse({'books': books})
+        except requests.RequestException:
+            return JsonResponse({'error': 'Error connecting to OpenLibrary'}, status=502)
+        except Exception:
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+
+
+class AddBookView(View):
+    """Agrega un libro nuevo a la biblioteca, si no existe."""
+
+    def post(self, request):
+        data = request.POST
+        referer = request.META.get("HTTP_REFERER", "/")
+
+        try:
+            title = data.get("title")
             if not title:
-                return JsonResponse({'error': 'El título es requerido'}, status=400)
-            
-            # Verificar si el libro ya existe por ISBN o OpenLibrary ID
-            if isbn and Book.objects.filter(isbn=isbn).exists():
-                return JsonResponse({'error': 'Ya existe un libro con este ISBN'}, status=400)
-            
-            if openlibrary_id and Book.objects.filter(openlibrary_id=openlibrary_id).exists():
-                return JsonResponse({'error': 'Este libro de OpenLibrary ya existe'}, status=400)
-            
-            # Crear el libro
+                messages.error(request, "El libro no tiene título.")
+                return redirect(referer)
+
+            isbn = data.get("isbn") or ""
+            openlibrary_id = data.get("openlibrary_id") or ""
+            authors = data.get("authors") or "Autor desconocido"
+            publish_date = data.get("publish_date") or str(date.today())
+            stock = int(data.get("stock", 1))
+            cover_url = data.get("cover_url") or None
+            available = data.get("available") == "true"
+
+            # ✅ Buscar duplicados de forma segura
+            existing = None
+            if openlibrary_id:
+                existing = Book.objects.filter(openlibrary_id=openlibrary_id).first()
+            elif isbn:
+                existing = Book.objects.filter(isbn__icontains=isbn).first()
+            else:
+                existing = Book.objects.filter(title__iexact=title).first()
+
+            if existing:
+                messages.warning(request, f'El libro "{existing.title}" ya está en la biblioteca.')
+                return redirect(referer)
+
+            # Crear libro nuevo
             book = Book.objects.create(
                 title=title,
                 authors=authors,
-                isbn=isbn,
+                isbn=[isbn] if isbn else [],
                 publish_date=publish_date,
                 stock=stock,
                 cover_url=cover_url,
                 available=available,
-                openlibrary_id=openlibrary_id
+                openlibrary_id=openlibrary_id or None,
             )
-            
-            return JsonResponse({
-                'success': True, 
-                'book_id': book.id,
-                'message': f'Libro "{title}" agregado correctamente!'
-            })
-            
-        except Exception as e:
-            return JsonResponse({'error': f'Error al agregar el libro: {str(e)}'}, status=500)
-    
-    # Si es GET, mostrar el formulario
-    return render(request, 'books/add_book.html')
 
-def book_detail(request, book_id):
-    book = Book.objects.get(id=book_id)
-    reviews = Review.objects.filter(book=book).select_related('user')
-    context = {
-        'book': book,
-        'reviews': reviews,
-    }
-    return render(request, 'book_detail.html', context)
-def add_review(request, book_id):
-    if request.method == 'POST':
-        rating = int(request.POST.get('rating'))
-        comment = request.POST.get('comment', '')
-        book = Book.objects.get(id=book_id)
+            messages.success(request, f'Libro "{book.title}" agregado correctamente.')
+            return redirect(referer)
+
+        except Exception as e:
+            messages.error(request, f"Error al agregar el libro: {e}")
+            return redirect(referer)
+
+class RemoveBookView(View):
+    """Elimina un libro existente de la biblioteca."""
+
+    def post(self, request, book_id):
+        referer = request.META.get("HTTP_REFERER", "/")
+
+        try:
+            book = Book.objects.filter(id=book_id).first()
+            if not book:
+                messages.warning(request, "El libro no existe o ya fue eliminado.")
+                return redirect(referer)
+
+            title = book.title
+            book.delete()
+            messages.info(request, f'El libro "{title}" fue eliminado de la biblioteca.')
+            return redirect(referer)
+
+        except Exception as e:
+            messages.error(request, f"Error al eliminar el libro: {e}")
+            return redirect(referer)
+
+class EditReviewView(LoginRequiredMixin, View):
+    """Permite editar la reseña existente del usuario."""
+    def post(self, request, book_id):
+        book = get_object_or_404(Book, id=book_id)
+        user = request.user
+
+        review = Review.objects.filter(book=book, user=user).first()
+        if not review:
+            messages.error(request, "No tienes una reseña para este libro.")
+            return redirect('book_detail', pk=book_id)
+
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '').strip()
+
+        if not rating or not comment:
+            messages.error(request, "Debes completar todos los campos.")
+            return redirect('book_detail', pk=book_id)
+
+        review.rating = int(rating)
+        review.comment = comment
+        review.save()
+
+        messages.success(request, "Tu reseña fue actualizada correctamente.")
+        return redirect('book_detail', pk=book_id)
+
+
+
+class BookDetailView(DetailView):
+    model = Book
+    template_name = 'books/book_detail.html'
+    context_object_name = 'book'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        book = self.object
+        reviews = Review.objects.filter(book=book).order_by('-created_at')
+
+        context['recent_reviews'] = reviews[:3]
+        context['review_count'] = reviews.count()
+        context['average_rating'] = round(reviews.aggregate(avg=Avg('rating'))['avg'] or 0, 1)
+        context['total_loans'] = book.loan_set.count() if hasattr(book, 'loan_set') else 0
+
+        user = self.request.user
+        # 🔹 Agregamos esto
+        context['user_review'] = (
+            Review.objects.filter(book=book, user=user).first()
+            if user.is_authenticated else None
+        )
+        context['user_has_reviewed'] = bool(context['user_review'])
+
+        context['is_favorite'] = (
+            user.is_authenticated
+            and hasattr(user, 'profile')
+            and hasattr(user.profile, 'favorite_books')
+            and book in user.profile.favorite_books.all()
+        )
+        return context
+
+
+class AddReviewView(LoginRequiredMixin, CreateView):
+    model = Review
+    fields = ['rating', 'comment']
+
+    def post(self, request, book_id):
+        book = get_object_or_404(Book, id=book_id)
+        user = request.user
+
+        # Verificar si ya tiene una reseña
+        if Review.objects.filter(book=book, user=user).exists():
+            messages.warning(request, "Ya has dejado una reseña para este libro.")
+            return redirect('book_detail', pk=book_id)
+
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '').strip()
+
+        if not rating or not comment:
+            messages.error(request, "Debes completar todos los campos.")
+            return redirect('book_detail', pk=book_id)
+
         Review.objects.create(
-            user=request.user,
+            user=user,
             book=book,
-            rating=rating,
+            rating=int(rating),
             comment=comment
         )
-        return JsonResponse({'success': True})
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
-def toggle_favorite(request, book_id):
-    book = Book.objects.get(id=book_id)
-    profile = request.user.profile
-    if book in profile.favorite_books.all():
-        profile.favorite_books.remove(book)
-        favorited = False
-    else:
-        profile.favorite_books.add(book)
-        favorited = True
-    return JsonResponse({'favorited': favorited})
 
+        messages.success(request, "Tu reseña fue publicada correctamente.")
+        return redirect('book_detail', pk=book_id)
+    
+
+class DeleteReviewView(LoginRequiredMixin, View):
+    """Permite eliminar la reseña existente del usuario."""
+    def post(self, request, book_id):
+        book = get_object_or_404(Book, id=book_id)
+        review = Review.objects.filter(book=book, user=request.user).first()
+
+        if not review:
+            messages.error(request, "No tenés una reseña para eliminar.")
+            return redirect('book_detail', pk=book_id)
+
+        review.delete()
+        messages.success(request, "Tu reseña fue eliminada correctamente.")
+        return redirect('book_detail', pk=book_id)
+
+
+class ToggleFavoriteView(LoginRequiredMixin, View):
+    def post(self, request, book_id):
+        book = get_object_or_404(Book, id=book_id)
+        profile = get_object_or_404(UserProfile, user=request.user)
+
+        if book in profile.favorite_books.all():
+            profile.favorite_books.remove(book)
+            messages.info(request, f'El libro "{book.title}" fue eliminado de tus favoritos.')
+        else:
+            profile.favorite_books.add(book)
+            messages.success(request, f'El libro "{book.title}" fue agregado a tus favoritos.')
+
+        referer = request.META.get('HTTP_REFERER', '/')
+        return redirect(referer)
+
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    model = UserProfile
+    template_name = 'users/profile.html'
+    context_object_name = 'profile'
+
+    def get_object(self):
+        return get_object_or_404(UserProfile, user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = self.get_object()
+
+        # Favoritos (ManyToMany con Book)
+        context['user_favorites'] = profile.favorite_books.all()
+
+        # Préstamos activos e historial
+        context['active_loans'] = self.request.user.loan_set.filter(status='active').select_related('book')
+        context['loan_history'] = self.request.user.loan_set.exclude(status='active').select_related('book')
+
+        return context
+
+class RemoveFavoriteView(LoginRequiredMixin, View):
+    """Elimina un libro de los favoritos del usuario."""
+    def post(self, request, book_id):
+        profile = get_object_or_404(UserProfile, user=request.user)
+        book = get_object_or_404(Book, id=book_id)
+
+        if book in profile.favorite_books.all():
+            profile.favorite_books.remove(book)
+            messages.success(request, f'El libro "{book.title}" fue eliminado de tus favoritos.')
+        else:
+            messages.warning(request, "Este libro no estaba en tus favoritos.")
+
+        return redirect('profile')

@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block title %}Mis Préstamos{% endblock %} {% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4"><i class="fas fa-book"></i> Mis Préstamos</h2>
+    {% if loans %}
+    <div class="list-group">
+        {% for loan in loans %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ loan.book.title }}</strong><br />
+                <small> Tipo: {{ loan.get_loan_type_display }} | Fecha: {{ loan.loan_date }} | Vencimiento: {{ loan.due_date }} </small>
+            </div>
+            {% if loan.status == 'active' %}
+            <span class="badge bg-success">Activo</span>
+            {% elif loan.status == 'overdue' %}
+            <span class="badge bg-danger">Vencido</span>
+            {% elif loan.status == 'returned' %}
+            <span class="badge bg-secondary">Devuelto</span>
+            {% else %}
+            <span class="badge bg-warning text-dark">{{ loan.get_status_display }}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4">No tienes préstamos registrados actualmente.</div>
+    {% endif %}
+</div>
+{% endblock %}

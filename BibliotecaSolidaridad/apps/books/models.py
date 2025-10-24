@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Count, Q
 
 User = get_user_model()
 
@@ -16,8 +17,38 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
+class BookQuerySet(models.QuerySet):
+    def recommended(self):
+        return self.filter(stock__gt=0).order_by('-created_at')[:8]
+
+    def total_available(self):
+        return self.filter(stock__gt=0).count()
+
+    def featured_authors(self):
+        return (
+            self.values('authors')
+            .annotate(books_count=Count('id'))
+            .filter(authors__isnull=False)
+            .exclude(authors='')
+            .order_by('-books_count')[:6]
+        )
+
+    def search(self, query: str):
+        if not query:
+            return self.none()
+        return (
+            self.filter(
+                Q(title__icontains=query)
+                | Q(authors__icontains=query)
+                | Q(categories__name__icontains=query)
+            )
+            .distinct()
+        )
+
+
 class Book(models.Model):
-    openlibrary_id = models.CharField(max_length=20, unique=True)
+    openlibrary_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
     title = models.CharField(max_length=500)
     authors = models.JSONField()  # Lista de autores
     publish_date = models.CharField(max_length=100, blank=True)  # Año de publicación
@@ -29,6 +60,8 @@ class Book(models.Model):
     available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = BookQuerySet.as_manager()
+
     class Meta:
         db_table = 'books'
         verbose_name = 'Libro'
@@ -36,7 +69,8 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
-    
+
+
 class BookStock(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     physical_id = models.CharField(max_length=50, unique=True)
@@ -56,6 +90,11 @@ class BookStock(models.Model):
         return f"{self.book.title} - {self.physical_id}"
 
 
+class ReviewQuerySet(models.QuerySet):
+    def for_book(self, book):
+        return self.filter(book=book).select_related('user')
+
+
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -63,10 +102,13 @@ class Review(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = ReviewQuerySet.as_manager()
+
     class Meta:
         db_table = 'reviews'
         verbose_name = 'Reseña'
         unique_together = ('user', 'book')
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

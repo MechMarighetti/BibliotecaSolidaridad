@@ -1,9 +1,13 @@
 from django.db import models
-
-from django.db import models
 from django.contrib.auth import get_user_model
 from apps.books.models import Book
+from django.utils import timezone
 User = get_user_model()
+
+class LoanQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(status='active')
+
 
 class Loan(models.Model):
     LOAN_TYPES = (
@@ -25,6 +29,19 @@ class Loan(models.Model):
         ('overdue', 'Vencido'),
         ('lost', 'Perdido')
     ))
+
+    objects = LoanQuerySet.as_manager()
+
+    @property
+    def is_overdue(self):
+        return self.status == 'active' and self.due_date < timezone.now().date()
+    
+    @property
+    def days_overdue(self):
+        if self.is_overdue:
+            return (timezone.now().date() - self.due_date).days
+        return 0
+
     class Meta:
         db_table = 'loans'
         verbose_name = 'Préstamo'
@@ -77,4 +94,3 @@ class LoanRequest(models.Model):
 
     def __str__(self):
         return f"Solicitud de {self.user} - {self.book}"
-

@@ -1,44 +1,34 @@
-{% extends 'base.html' %}
-
-{% block title %}{{ book.title }} - Biblioteca{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}{{ book.title }} - Biblioteca{% endblock %} {% block content %}
 <div class="container mt-4">
     <div class="row">
         <!-- Información del Libro -->
         <div class="col-md-4">
             <div class="card">
                 {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}">
+                <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" />
                 {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px">
                     <i class="fas fa-book fa-5x text-muted"></i>
                 </div>
                 {% endif %}
                 <div class="card-body">
-                    {% if user.is_authenticated and user.role == 'reader' %}
-                        {% if book.is_available %}
-                        <a href="{% url 'loan_request' book.id %}" class="btn btn-primary w-100 mb-2">
-                            <i class="fas fa-hand-holding"></i> Solicitar Préstamo
-                        </a>
+                    {% if user.is_authenticated and user.role == 'reader' %} {% if book.is_available %}
+                    <a href="{% url 'loan_request' book.id %}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-hand-holding"></i> Solicitar Préstamo
+                    </a>
+                    {% else %}
+                    <button class="btn btn-secondary w-100 mb-2" disabled><i class="fas fa-times-circle"></i> No Disponible</button>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'toggle_favorite' book.id %}">
+                        {% csrf_token %} {% if is_favorite %}
+                        <button type="submit" class="btn btn-outline-danger w-100"><i class="fas fa-heart"></i> Quitar de Favoritos</button>
                         {% else %}
-                        <button class="btn btn-secondary w-100 mb-2" disabled>
-                            <i class="fas fa-times-circle"></i> No Disponible
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="far fa-heart"></i> Agregar a Favoritos
                         </button>
                         {% endif %}
-                        
-                        <form method="post" action="{% url 'toggle_favorite' book.id %}">
-                            {% csrf_token %}
-                            {% if is_favorite %}
-                            <button type="submit" class="btn btn-outline-danger w-100">
-                                <i class="fas fa-heart"></i> Quitar de Favoritos
-                            </button>
-                            {% else %}
-                            <button type="submit" class="btn btn-outline-primary w-100">
-                                <i class="far fa-heart"></i> Agregar a Favoritos
-                            </button>
-                            {% endif %}
-                        </form>
+                    </form>
                     {% endif %}
                 </div>
             </div>
@@ -52,21 +42,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
-                        <div class="col-sm-6">
-                            <strong>Autor:</strong> {{ book.author }}
-                        </div>
-                        <div class="col-sm-6">
-                            <strong>ISBN:</strong> {{ book.isbn|default:"No disponible" }}
-                        </div>
+                        <div class="col-sm-6"><strong>Autor:</strong> {{ book.author }}</div>
+                        <div class="col-sm-6"><strong>ISBN:</strong> {{ book.isbn|default:"No disponible" }}</div>
                     </div>
-                    
+
                     <div class="row mb-3">
-                        <div class="col-sm-6">
-                            <strong>Año de Publicación:</strong> {{ book.publish_date|default:"Desconocido" }}
-                        </div>
-                        <div class="col-sm-6">
-                            <strong>Páginas:</strong> {{ book.number_of_pages|default:"No especificado" }}
-                        </div>
+                        <div class="col-sm-6"><strong>Año de Publicación:</strong> {{ book.publish_date|default:"Desconocido" }}</div>
+                        <div class="col-sm-6"><strong>Páginas:</strong> {{ book.number_of_pages|default:"No especificado" }}</div>
                     </div>
 
                     <div class="mb-3">
@@ -94,7 +76,7 @@
                     </div>
                     {% endif %}
 
-                    <!-- Estadísticas del Libro -->
+                    <!-- Estadísticas -->
                     <div class="row text-center mt-4">
                         <div class="col-4">
                             <div class="border rounded p-2">
@@ -118,15 +100,42 @@
                 </div>
             </div>
 
-            <!-- Reseñas Recientes -->
+            <!-- Reseñas -->
             <div class="card mt-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Últimas Reseñas</h5>
-                    {% if user.is_authenticated %}
-                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                    {% if user.is_authenticated %} {% if not user_has_reviewed %}
+                    <button
+                        class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#reviewModal"
+                        data-action="{% url 'add_review' book.id %}"
+                    >
                         <i class="fas fa-plus"></i> Agregar Reseña
                     </button>
-                    {% endif %}
+                    {% else %}
+                    <div class="d-flex gap-2">
+                        <button
+                            class="btn btn-sm btn-warning"
+                            data-bs-toggle="modal"
+                            data-bs-target="#reviewModal"
+                            data-action="{% url 'edit_review' book.id %}"
+                            data-rating="{{ user_review.rating }}"
+                            data-comment="{{ user_review.comment|escapejs }}"
+                        >
+                            <i class="fas fa-edit"></i> Editar Reseña
+                        </button>
+
+                        <form
+                            method="post"
+                            action="{% url 'delete_review' book.id %}"
+                            onsubmit="return confirm('¿Seguro que querés eliminar tu reseña?');"
+                        >
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                        </form>
+                    </div>
+                    {% endif %} {% endif %}
                 </div>
                 <div class="card-body">
                     {% for review in recent_reviews %}
@@ -134,13 +143,11 @@
                         <div class="d-flex justify-content-between">
                             <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
                             <div>
-                                {% for i in "12345" %}
-                                {% if forloop.counter <= review.rating %}
+                                {% for i in "12345" %} {% if forloop.counter <= review.rating %}
                                 <i class="fas fa-star text-warning"></i>
                                 {% else %}
                                 <i class="far fa-star text-warning"></i>
-                                {% endif %}
-                                {% endfor %}
+                                {% endif %} {% endfor %}
                             </div>
                         </div>
                         <p class="mb-1 mt-2">{{ review.comment }}</p>
@@ -148,9 +155,7 @@
                     </div>
                     {% empty %}
                     <p class="text-muted text-center">Aún no hay reseñas para este libro.</p>
-                    {% endfor %}
-                    
-                    {% if review_count > 3 %}
+                    {% endfor %} {% if review_count > 3 %}
                     <div class="text-center">
                         <a href="{% url 'book_reviews' book.id %}" class="btn btn-outline-primary btn-sm">
                             Ver todas las reseñas ({{ review_count }})
@@ -163,70 +168,104 @@
     </div>
 </div>
 
-<!-- Modal para Agregar Reseña -->
+<!-- Modal para Agregar o Editar Reseña -->
 {% if user.is_authenticated %}
 <div class="modal fade" id="reviewModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Agregar Reseña</h5>
+                <h5 class="modal-title">{% if user_has_reviewed %}Editar Reseña{% else %}Agregar Reseña{% endif %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'add_review' book.id %}">
+            <form id="reviewForm" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Puntuación</label>
                         <div class="rating-stars">
-                            {% for i in "12345" %}
-                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" 
-                                   {% if forloop.counter == 5 %}checked{% endif %}>
-                            <label for="star{{ i }}" class="star-label">
-                                <i class="far fa-star"></i>
-                            </label>
+                            {% for i in "54321" %}
+                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" />
+                            <label for="star{{ i }}" class="star-label"><i class="far fa-star"></i></label>
                             {% endfor %}
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="comment" class="form-label">Comentario</label>
-                        <textarea class="form-control" id="comment" name="comment" rows="4" 
-                                  placeholder="Comparte tu opinión sobre este libro..." required></textarea>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Publicar Reseña</button>
+                    <button type="submit" class="btn btn-primary">{% if user_has_reviewed %}Actualizar{% else %}Publicar{% endif %}</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 {% endif %}
-{% endblock %}
 
-{% block extra_css %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('reviewModal');
+        const commentField = document.getElementById('comment');
+        const ratingInputs = document.querySelectorAll('input[name="rating"]');
+        const form = document.getElementById('reviewForm');
+
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) {
+                console.warn('No relatedTarget encontrado para el modal');
+                return;
+            }
+
+            const action = button.getAttribute('data-action');
+            const rating = button.getAttribute('data-rating');
+            const comment = button.getAttribute('data-comment');
+
+            console.log('➡️ Datos recibidos:', { action, rating, comment });
+
+            // Seteamos la acción del formulario
+            if (action) form.setAttribute('action', action);
+
+            // Limpiamos campos antes de rellenar
+            commentField.value = '';
+            ratingInputs.forEach((r) => (r.checked = false));
+
+            // Si vienen datos, los cargamos
+            if (rating) {
+                const selected = document.getElementById('star' + rating);
+                if (selected) selected.checked = true;
+            }
+            if (comment) {
+                commentField.value = comment;
+            }
+        });
+    });
+</script>
+
+{% endblock %} {% block extra_css %}
 <style>
-.rating-stars {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-}
-.rating-stars input {
-    display: none;
-}
-.rating-stars label {
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: #ddd;
-    margin-right: 5px;
-}
-.rating-stars input:checked ~ label,
-.rating-stars label:hover,
-.rating-stars label:hover ~ label {
-    color: #ffc107;
-}
-.rating-stars input:checked + label {
-    color: #ffc107;
-}
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    .rating-stars input {
+        display: none;
+    }
+    .rating-stars label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #ddd;
+        margin-right: 5px;
+    }
+    .rating-stars input:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label {
+        color: #ffc107;
+    }
+    .rating-stars input:checked + label {
+        color: #ffc107;
+    }
 </style>
 {% endblock %}
