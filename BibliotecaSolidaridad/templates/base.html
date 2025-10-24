@@ -104,20 +104,7 @@
     <main>
         {% block content %}{% endblock %}
     </main>
-    <div class="card">
-        <div class="card-body text-center">
-            <h5>📧 Suscríbete a nuestro newsletter</h5>
-            <p>Recibe las últimas novedades de la biblioteca</p>
-            <form method="post" action="{% url 'subscribe_newsletter' %}">
-                {% csrf_token %}
-                <div class="input-group mb-3">
-                    <input type="email" name="email" class="form-control" placeholder="tu.email@ejemplo.com" required>
-                    <button class="btn btn-primary" type="submit">Suscribirse</button>
-                </div>
-            </form>
-            <small class="text-muted">Puedes cancelar la suscripción en cualquier momento.</small>
-        </div>
-    </div>
+    <br>
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -142,6 +129,25 @@
                         Domingos: Cerrado
                     </p>
                 </div>
+                <div class="card-body text-center">
+                    <br>
+            <div>
+                <h5>📧 Suscríbete a nuestro newsletter</h5>
+                <p>Recibe las últimas novedades de la biblioteca</p>
+                <form method="post" action="{% url 'subscribe_newsletter' %}">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="email" name="email" class="form-control" placeholder="tu.email@ejemplo.com" required>
+                        <button class="btn btn-primary" type="submit">Suscribirse</button>
+                    </div>
+                </form>
+                <small class="text-muted">Puedes cancelar la suscripción en cualquier momento.</small>
+            </div>
+        </div>
+    </div>
+                
+                    <br>
+        
             </div>
             <hr>
             <div class="text-center">

@@ -1,13 +1,16 @@
 from datetime import date
+from django.urls import reverse_lazy
 import requests
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.shortcuts import redirect, render
 from django.db.models import Avg
 from django.contrib import messages
+from .models import Category
+from .forms import BookForm
 
 from .models import Book, Review
 from apps.users.models import UserProfile
@@ -79,6 +82,7 @@ class SearchOpenLibraryView(View):
                     'title': doc.get('title', ''),
                     'author_name': doc.get('author_name', []),
                     'publish_year': doc.get('first_publish_year', ''),
+                    'number_of_pages': doc.get('number_of_pages', ''),
                     'isbn': doc.get('isbn', []),
                     'description': doc.get('description', ''),
                     'cover_url': (
@@ -95,58 +99,72 @@ class SearchOpenLibraryView(View):
             return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
-class AddBookView(View):
-    """Agrega un libro nuevo a la biblioteca, si no existe."""
+class AddBookView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Vista para agregar libros usando el BookForm"""
+    model = Book
+    form_class = BookForm
+    template_name = 'books/add_book.html'
+    success_url = reverse_lazy('book_list')
+    
+    def test_func(self):
+        """Solo bibliotecarios y administradores pueden agregar libros"""
+        return self.request.user.role in ['librarian', 'admin']
+    
+    def get(self, request):
+        """Muestra el formulario vacío para agregar libro"""
+        form = BookForm()
+        context = {
+            'form': form,
+            'categories': Category.objects.all(),
+        }
+        return render(request, 'books/add_book.html', context)
+
+    def get_context_data(self, **kwargs):
+        """Agrega categorías al contexto para el template"""
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        return context
 
     def post(self, request):
-        data = request.POST
-        referer = request.META.get("HTTP_REFERER", "/")
+        form = BookForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                book = form.save(commit=False)
+                openlibrary_id = request.POST.get('openlibrary_id')
+                if openlibrary_id:
+                    book.openlibrary_id = openlibrary_id
+                
+                book.save()
+                form.save_m2m()
+                
+                messages.success(request, f'Libro "{book.title}" agregado correctamente.')
+                # ✅ CAMBIO: Usar 'pk' en lugar de 'book_id'
+                return redirect('book_detail', pk=book.id)
+                
+            except Exception as e:
+                # ✅ CAMBIO: Mensaje genérico sin detalles técnicos
+                messages.error(request, 'Error al guardar el libro. Por favor intenta nuevamente.')
+                print(f"Error guardando libro: {str(e)}")  # Log interno
 
-        try:
-            title = data.get("title")
-            if not title:
-                messages.error(request, "El libro no tiene título.")
-                return redirect(referer)
-
-            isbn = data.get("isbn") or ""
-            openlibrary_id = data.get("openlibrary_id") or ""
-            authors = data.get("authors") or "Autor desconocido"
-            publish_date = data.get("publish_date") or str(date.today())
-            stock = int(data.get("stock", 1))
-            cover_url = data.get("cover_url") or None
-            available = data.get("available") == "true"
-
-            # ✅ Buscar duplicados de forma segura
-            existing = None
-            if openlibrary_id:
-                existing = Book.objects.filter(openlibrary_id=openlibrary_id).first()
-            elif isbn:
-                existing = Book.objects.filter(isbn__icontains=isbn).first()
-            else:
-                existing = Book.objects.filter(title__iexact=title).first()
-
-            if existing:
-                messages.warning(request, f'El libro "{existing.title}" ya está en la biblioteca.')
-                return redirect(referer)
-
-            # Crear libro nuevo
-            book = Book.objects.create(
-                title=title,
-                authors=authors,
-                isbn=[isbn] if isbn else [],
-                publish_date=publish_date,
-                stock=stock,
-                cover_url=cover_url,
-                available=available,
-                openlibrary_id=openlibrary_id or None,
-            )
-
-            messages.success(request, f'Libro "{book.title}" agregado correctamente.')
-            return redirect(referer)
-
-        except Exception as e:
-            messages.error(request, f"Error al agregar el libro: {e}")
-            return redirect(referer)
+    def form_valid(self, form):
+        """Procesa el formulario cuando es válido"""
+        response = super().form_valid(form)
+        messages.success(
+            self.request, 
+            f'Libro "{self.object.title}" agregado correctamente.'
+        )
+        return response
+    
+    def form_invalid(self, form):
+        """Procesa el formulario cuando es inválido"""
+        messages.error(
+            self.request, 
+            'Por favor corrige los errores en el formulario.'
+        )
+        return super().form_invalid(self, form)
+        
+        
 
 class RemoveBookView(View):
     """Elimina un libro existente de la biblioteca."""

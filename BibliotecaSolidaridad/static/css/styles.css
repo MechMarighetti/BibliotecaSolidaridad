@@ -106,6 +106,10 @@ main {
     font-size: 0.95rem;
 }
 
+.portada {
+    opacity: 20%;
+}
+
 form input,
 form select,
 form textarea {

@@ -62,8 +62,8 @@
 
                     <div class="mb-3">
                         <strong>Disponibilidad:</strong>
-                        {% if book.is_available %}
-                        <span class="badge bg-success">{{ book.available_copies }} copias disponibles</span>
+                        {% if book.available %}
+                        <span class="badge bg-success">{{ book.stock }} copias disponibles</span>
                         {% else %}
                         <span class="badge bg-danger">No disponible</span>
                         {% endif %}

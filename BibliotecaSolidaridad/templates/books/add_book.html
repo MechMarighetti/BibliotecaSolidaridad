@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Agregar Libro - Biblioteca{% endblock %}
 
@@ -17,9 +18,10 @@
                     <div class="mb-4">
                         <h5>Buscar en OpenLibrary</h5>
                         <form id="search-openlibrary" class="row g-3">
+                            {% csrf_token %}
                             <div class="col-md-8">
-                                <input type="text" class="form-control" id="search-query" 
-                                       placeholder="Ingresa título, autor o ISBN...">
+                                <input type="text" class="form-control" id="search-query"
+                                    placeholder="Ingresa título, autor o ISBN..." required>
                             </div>
                             <div class="col-md-4">
                                 <button type="submit" class="btn btn-primary w-100">
@@ -37,26 +39,31 @@
 
                     <!-- Formulario Manual -->
                     <h5>O ingresa los datos manualmente</h5>
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" id="book-form">
                         {% csrf_token %}
-                        
+
+                        <!-- Campo oculto para openlibrary_id -->
+                        <input type="hidden" id="id_openlibrary_id" name="openlibrary_id">
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.title.id_for_label }}" class="form-label">Título *</label>
                                     {{ form.title }}
                                     {% if form.title.errors %}
-                                    <div class="text-danger">{{ form.title.errors }}</div>
+                                    <div class="text-danger small">{{ form.title.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.authors.id_for_label }}" class="form-label">Autor *</label>
-                                    {{ form.author }}
-                                    {% if form.author.errors %}
-                                    <div class="text-danger">{{ form.author.errors }}</div>
+                                    <label for="{{ form.authors_input.id_for_label }}" class="form-label">Autores
+                                        *</label>
+                                    {{ form.authors_input }}
+                                    {% if form.authors_input.errors %}
+                                    <div class="text-danger small">{{ form.authors_input.errors }}</div>
                                     {% endif %}
+                                    <small class="form-text text-muted">{{ form.authors_input.help_text }}</small>
                                 </div>
                             </div>
                         </div>
@@ -64,41 +71,79 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.isbn.id_for_label }}" class="form-label">ISBN</label>
-                                    {{ form.isbn }}
+                                    <label for="{{ form.isbn_input.id_for_label }}" class="form-label">ISBN</label>
+                                    {{ form.isbn_input }}
+                                    {% if form.isbn_input.errors %}
+                                    <div class="text-danger small">{{ form.isbn_input.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">{{ form.isbn_input.help_text }}</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.publish_date.id_for_label }}" class="form-label">Año de Publicación</label>
+                                    <label for="{{ form.publish_date.id_for_label }}" class="form-label">Año de
+                                        Publicación</label>
                                     {{ form.publish_date }}
+                                    {% if form.publish_date.errors %}
+                                    <div class="text-danger small">{{ form.publish_date.errors }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.categories.id_for_label }}" class="form-label">Categorías</label>
-                            {{ form.categories }}
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.stock.id_for_label }}" class="form-label">Total de Copias</label>
-                                    {{ form.stock }}
+                                    <label for="{{ form.number_of_pages.id_for_label }}" class="form-label">Número de
+                                        Páginas</label>
+                                    {{ form.number_of_pages }}
+                                    {% if form.number_of_pages.errors %}
+                                    <div class="text-danger small">{{ form.number_of_pages.errors }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.cover_url.id_for_label }}" class="form-label">URL de Portada</label>
+                                    <label for="{{ form.cover_url.id_for_label }}" class="form-label">URL de
+                                        Portada</label>
                                     {{ form.cover_url }}
+                                    {% if form.cover_url.errors %}
+                                    <div class="text-danger small">{{ form.cover_url.errors }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Descripción</label>
-                            {{ form.description }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.stock.id_for_label }}" class="form-label">Stock</label>
+                                    {{ form.stock }}
+                                    {% if form.stock.errors %}
+                                    <div class="text-danger small">{{ form.stock.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">{{ form.stock.help_text }}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.categories.id_for_label }}"
+                                        class="form-label">Categorías</label>
+                                    {{ form.categories }}
+                                    {% if form.categories.errors %}
+                                    <div class="text-danger small">{{ form.categories.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <!-- ✅ CAMBIO: Invertir el orden: primero el input y luego el label -->
+                            {{ form.available }}
+                            <label for="{{ form.available.id_for_label }}" class="form-check-label">
+                                {{ form.available.label }}
+                            </label>
+                            <small class="form-text text-muted d-block">{{ form.available.help_text }}</small>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -117,70 +162,286 @@
 
 {% block extra_js %}
 <script>
-document.getElementById('search-openlibrary').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const query = document.getElementById('search-query').value;
-    
-    if (!query) {
-        alert('Por favor ingresa un término de búsqueda');
-        return;
+    // Función para escapar HTML (seguridad)
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        const div = document.createElement('div');
+        div.textContent = unsafe;
+        return div.innerHTML;
     }
 
-    const resultsDiv = document.getElementById('search-results');
-    const resultsList = document.getElementById('results-list');
-    
-    // Mostrar loading
-    resultsList.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
-    resultsDiv.style.display = 'block';
+    // Búsqueda en OpenLibrary
+    document.getElementById('search-openlibrary').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const query = document.getElementById('search-query').value.trim();
 
-    // Hacer petición a la API
-    fetch(`/books/api/search-openlibrary/?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            resultsList.innerHTML = '';
-            
-            if (data.books && data.books.length > 0) {
-                data.books.forEach(book => {
-                    const bookItem = document.createElement('div');
-                    bookItem.className = 'list-group-item';
-                    bookItem.innerHTML = `
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">${book.title}</h6>
-                            <small>${book.publish_year || ''}</small>
-                        </div>
-                        <p class="mb-1">Autor: ${book.author_name ? book.author_name.join(', ') : 'Desconocido'}</p>
-                        <small>ISBN: ${book.isbn ? book.isbn[0] : 'N/A'}</small>
-                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" 
-                                onclick="fillBookForm(${JSON.stringify(book).replace(/"/g, '&quot;')})">
-                            Usar este libro
-                        </button>
-                    `;
-                    resultsList.appendChild(bookItem);
-                });
-            } else {
-                resultsList.innerHTML = '<div class="text-muted">No se encontraron resultados.</div>';
+        if (!query) {
+            showAlert('Por favor ingresa un término de búsqueda', 'warning');
+            return;
+        }
+
+        const resultsDiv = document.getElementById('search-results');
+        const resultsList = document.getElementById('results-list');
+
+        // Mostrar loading
+        resultsList.innerHTML = `
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Buscando en OpenLibrary...</p>
+        </div>
+    `;
+        resultsDiv.style.display = 'block';
+
+        // Hacer petición a nuestra API
+        fetch(`/books/api/search-openlibrary/?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la búsqueda');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                displaySearchResults(data.books || []);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsList.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Error al buscar libros: ${escapeHtml(error.message)}
+                </div>
+            `;
+            });
+    });
+
+    // ✅ AGREGAR: Función de notificación mejorada
+    function showNotification(message, type = 'info') {
+        // Buscar o crear contenedor de notificaciones
+        let notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notification-container';
+            notificationContainer.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 1060; min-width: 300px;';
+            document.body.appendChild(notificationContainer);
+        }
+
+        const alertClass = {
+            'success': 'alert-success',
+            'error': 'alert-danger',
+            'warning': 'alert-warning',
+            'info': 'alert-info'
+        }[type] || 'alert-info';
+
+        const notification = document.createElement('div');
+        notification.className = `alert ${alertClass} alert-dismissible fade show`;
+        notification.innerHTML = `
+        <i class="${icon} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+        notificationContainer.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            resultsList.innerHTML = '<div class="text-danger">Error al buscar libros.</div>';
-        });
-});
+        }, 5000);
+    }
 
-function fillBookForm(bookData) {
-    // Llenar el formulario con los datos del libro
-    document.getElementById('id_title').value = bookData.title || '';
-    document.getElementById('id_author').value = bookData.author_name ? bookData.author_name[0] : '';
-    document.getElementById('id_isbn').value = bookData.isbn ? bookData.isbn[0] : '';
-    document.getElementById('id_publish_date').value = bookData.publish_year || '';
-    document.getElementById('id_cover_url').value = bookData.cover_url || '';
-    document.getElementById('id_description').value = bookData.description || '';
-    
-    // Ocultar resultados
-    document.getElementById('search-results').style.display = 'none';
-    
-    // Scroll al formulario
-    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
-}
+    // ✅ AGREGAR: Manejo de envío del formulario con loading
+    document.getElementById('book-form').addEventListener('submit', function (e) {
+        const submitBtn = document.getElementById('submit-btn');
+        const originalText = submitBtn.innerHTML;
+
+        // Mostrar loading
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        submitBtn.disabled = true;
+
+        // Validación básica
+        const title = document.getElementById('id_title').value.trim();
+        const authors = document.getElementById('id_authors_input').value.trim();
+
+        if (!title || !authors) {
+            e.preventDefault();
+            showNotification('Los campos Título y Autores son obligatorios', 'warning');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return false;
+        }
+
+        return true;
+    });
+
+    // Mostrar resultados de búsqueda
+    function displaySearchResults(books) {
+        const resultsList = document.getElementById('results-list');
+        resultsList.innerHTML = '';
+
+        if (books.length === 0) {
+            resultsList.innerHTML = `
+            <div class="text-center text-muted py-3">
+                <i class="fas fa-search fa-2x mb-2"></i>
+                <p>No se encontraron resultados.</p>
+            </div>
+        `;
+            return;
+        }
+
+        books.forEach(book => {
+            const bookData = {
+                title: book.title || 'Sin título',
+                authors: book.author_name ? book.author_name.join(', ') : 'Autor desconocido',
+                isbn: book.isbn ? book.isbn.join(', ') : '',
+                publish_year: book.publish_year || '',
+                cover_url: book.cover_url || '',
+                openlibrary_id: book.openlibrary_id || '',
+                number_of_pages: book.number_of_pages || ''
+            };
+
+            const bookItem = document.createElement('div');
+            bookItem.className = 'list-group-item';
+            bookItem.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1 me-3">
+                    <h6 class="mb-1">${escapeHtml(bookData.title)}</h6>
+                    <p class="mb-1 text-muted">${escapeHtml(bookData.authors)}</p>
+                    <small class="text-muted">
+                        ${bookData.publish_year ? `Año: ${bookData.publish_year} • ` : ''}
+                        ${bookData.number_of_pages ? `Páginas: ${bookData.number_of_pages} • ` : ''}
+                        ${bookData.isbn ? `ISBN: ${bookData.isbn.substring(0, 20)}${bookData.isbn.length > 20 ? '...' : ''}` : ''}
+                    </small>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary btn-use-book" 
+                        data-book='${JSON.stringify(bookData)}'
+                        title="Usar este libro en el formulario">
+                    <i class="fas fa-plus"></i> Usar
+                </button>
+            </div>
+        `;
+            resultsList.appendChild(bookItem);
+        });
+
+        // Agregar event listeners a los botones
+        document.querySelectorAll('.btn-use-book').forEach(button => {
+            button.addEventListener('click', function () {
+                try {
+                    const bookData = JSON.parse(this.dataset.book);
+                    fillBookForm(bookData);
+
+                    // Feedback visual
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-success');
+                    this.disabled = true;
+
+                } catch (error) {
+                    console.error('Error parsing book data:', error);
+                    showAlert('Error al cargar los datos del libro', 'danger');
+                }
+            });
+        });
+    }
+
+    // Llenar formulario con datos del libro
+    function fillBookForm(bookData) {
+        // Llenar campos básicos
+        document.getElementById('id_title').value = bookData.title;
+        document.getElementById('id_authors_input').value = bookData.authors;
+        document.getElementById('id_isbn_input').value = bookData.isbn;
+        document.getElementById('id_publish_date').value = bookData.publish_year;
+        document.getElementById('id_cover_url').value = bookData.cover_url;
+        document.getElementById('id_number_of_pages').value = bookData.number_of_pages;
+        document.getElementById('id_openlibrary_id').value = bookData.openlibrary_id;
+
+        // Ocultar resultados
+        document.getElementById('search-results').style.display = 'none';
+
+        // Mostrar mensaje de éxito
+        showAlert(`Datos de "${bookData.title}" cargados en el formulario`, 'success');
+
+        // Scroll al formulario
+        document.getElementById('book-form').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+
+    // Función para mostrar alertas
+    function showAlert(message, type = 'info') {
+        // Remover alerta existente si hay
+        const existingAlert = document.querySelector('.custom-alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+        alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+        // Insertar después del header
+        const header = document.querySelector('.card-header');
+        header.parentNode.insertBefore(alertDiv, header.nextSibling);
+
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // Validación del formulario
+    document.getElementById('book-form').addEventListener('submit', function (e) {
+        const title = document.getElementById('id_title').value.trim();
+        const authors = document.getElementById('id_authors_input').value.trim();
+
+        if (!title) {
+            e.preventDefault();
+            showAlert('El campo Título es obligatorio', 'danger');
+            document.getElementById('id_title').focus();
+            return false;
+        }
+
+        if (!authors) {
+            e.preventDefault();
+            showAlert('El campo Autores es obligatorio', 'danger');
+            document.getElementById('id_authors_input').focus();
+            return false;
+        }
+
+        return true;
+    });
 </script>
+
+<style>
+    .custom-alert {
+        margin: 1rem 0;
+        border-radius: 0.375rem;
+    }
+
+    .btn-use-book {
+        white-space: nowrap;
+        min-width: 70px;
+    }
+
+    .list-group-item {
+        transition: background-color 0.2s;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .spinner-border {
+        width: 2rem;
+        height: 2rem;
+    }
+</style>
 {% endblock %}

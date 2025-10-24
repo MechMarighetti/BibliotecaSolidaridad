@@ -25,7 +25,7 @@
                 {% endif %}
             </div>
             <div class="col-lg-6">
-                <img src="{% static 'images/library-hero.png' %}" alt="Biblioteca" class="img-fluid" >
+                <img class="portada" src="{% static 'images/library-hero.png' %}" alt="Biblioteca" class="img-fluid" >
             </div>
         </div>
     </div>
@@ -145,7 +145,7 @@
                 <div class="card">
                     <div class="card-body text-center">
                         <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title">{{ author.name }}</h5>
+                        <h5 class="card-title">{{ author.name.0 }}</h5>
                         <p class="card-text text-muted">{{ author.books_count }} libros en nuestra biblioteca</p>
                         <a href="{% url 'book_search' %}?q={{ author.name|urlencode }}" class="btn btn-sm btn-outline-primary">
                             Ver Libros

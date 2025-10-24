@@ -29,6 +29,7 @@ urlpatterns = [
     path('users/', include('apps.users.urls')),
     path('loans/', include('apps.loans.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
+    path('newsletter/', include('apps.newsletter.urls')),
 
     # Autenticación
     path('accounts/login/', user_views.CustomLoginView.as_view(), name='login'),
