@@ -23,7 +23,7 @@
                     </a>
                 </div>
                 {% endif %}
-                {% if user.is_authenticated and user.role == 'reader' %}
+                {% if user.is_authenticated and user.role == 'reader' or user.role == 'librarian' %}
                 <div class="mt-3">
                     <a href="{% url 'loans' %}" class="btn btn-outline-light">
                         <i class="fas fa-hand-holding"></i> Solicitar Préstamo de Libros
@@ -32,7 +32,7 @@
                 {% endif %}
             </div>
             <div class="col-lg-6">
-                <img class="portada" src="{% static 'images/library-hero.png' %}" alt="Biblioteca" class="img-fluid">
+                <img class="portada" src="{% static 'images/reader.svg' %}" alt="Biblioteca" class="img-fluid">
             </div>
         </div>
     </div>

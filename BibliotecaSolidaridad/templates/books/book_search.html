@@ -67,6 +67,7 @@
                         {% if book.openlibrary_id in existing_ids %}
                         <button class="btn btn-sm btn-secondary w-100" disabled><i class="fas fa-check"></i> En la Biblioteca</button>
                         {% else %}
+                        {% if user.is_authenticated and user.role == 'librarian' %}
                         <form method="post" action="{% url 'add_book' %}">
                             {% csrf_token %}
                             <input type="hidden" name="title" value="{{ book.title }}" />
@@ -79,6 +80,7 @@
                                 <i class="fas fa-plus-circle"></i> Agregar a la Biblioteca
                             </button>
                         </form>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>

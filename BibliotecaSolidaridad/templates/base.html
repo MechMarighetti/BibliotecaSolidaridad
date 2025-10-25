@@ -72,7 +72,14 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
+
+                            <li>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                                </form>
+                            </li>
+
                         </ul>
                     </li>
                     {% else %}
@@ -131,28 +138,29 @@
                 </div>
                 <div class="card-body text-center">
                     <br>
-            <div>
-                <h5>📧 Suscríbete a nuestro newsletter</h5>
-                <p>Recibe las últimas novedades de la biblioteca</p>
-                <form method="post" action="{% url 'subscribe_newsletter' %}">
-                    {% csrf_token %}
-                    <div class="input-group mb-3">
-                        <input type="email" name="email" class="form-control" placeholder="tu.email@ejemplo.com" required>
-                        <button class="btn btn-primary" type="submit">Suscribirse</button>
+                    <div>
+                        <h5>📧 Suscríbete a nuestro newsletter</h5>
+                        <p>Recibe las últimas novedades de la biblioteca</p>
+                        <form method="post" action="{% url 'subscribe_newsletter' %}">
+                            {% csrf_token %}
+                            <div class="input-group mb-3">
+                                <input type="email" name="email" class="form-control" placeholder="tu.email@ejemplo.com"
+                                    required>
+                                <button class="btn btn-primary" type="submit">Suscribirse</button>
+                            </div>
+                        </form>
+                        <small class="text-muted">Puedes cancelar la suscripción en cualquier momento.</small>
                     </div>
-                </form>
-                <small class="text-muted">Puedes cancelar la suscripción en cualquier momento.</small>
+                </div>
             </div>
+
+            <br>
+
         </div>
-    </div>
-                
-                    <br>
-        
-            </div>
-            <hr>
-            <div class="text-center">
-                <p>&copy; 2024 Biblioteca de la Solidaridad. Todos los derechos reservados.</p>
-            </div>
+        <hr>
+        <div class="text-center">
+            <p>&copy; 2024 Biblioteca de la Solidaridad. Todos los derechos reservados.</p>
+        </div>
         </div>
     </footer>
 
