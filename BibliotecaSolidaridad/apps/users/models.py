@@ -3,6 +3,10 @@ from django.contrib.auth.models import AbstractUser
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from .constants import LOAN_LIMITS
+from .validators import validate_dni
+
+    
 
 
 class User(AbstractUser):
@@ -12,7 +16,12 @@ class User(AbstractUser):
         ('admin', 'Administrador')
     )
     role = models.CharField(max_length=10, choices=ROLES, default='reader')
-    dni = models.CharField(max_length=20, unique=True)
+    dni = models.CharField(
+            max_length=20, 
+            unique=True,
+            validators=[validate_dni],
+            help_text="Formato: 12345678 o 12.345.678"
+        )
     address = models.TextField()
     phone = models.CharField(max_length=20)
     score = models.FloatField(default=5.0)
@@ -21,14 +30,14 @@ class User(AbstractUser):
     
     def get_loan_limit(self):
         """Calcula el límite de préstamos basado en el puntaje"""
-        if self.score >= 4.5:
-            return 5
-        elif self.score >= 3.0:
-            return 3
-        elif self.score >= 1.0:
-            return 1
-        else:
-            return 0
+        for score_range, limit in LOAN_LIMITS.items():
+            if score_range == 'excellent' and self.score >= 4.5:
+                return limit
+            elif score_range == 'good' and 3.0 <= self.score < 4.5:
+                return limit
+            elif score_range == 'fair' and 1.0 <= self.score < 3.0:
+                return limit
+        return 0
 
     class Meta:
         db_table = 'users'
@@ -67,5 +76,4 @@ def create_user_profile(sender, instance, created, **kwargs):
             user=instance,
             virtual_card_id=f"VCARD-{instance.id:05d}"
         )
-        # Si querés suscribirlo a todas las categorías por defecto
         profile.favorite_categories.set(Category.objects.all()[:3])

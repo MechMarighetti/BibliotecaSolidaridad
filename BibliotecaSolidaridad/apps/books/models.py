@@ -30,7 +30,6 @@ class BookQuerySet(models.QuerySet):
             self.values('authors')
             .annotate(books_count=Count('id'))
             .filter(authors__isnull=False)
-            .exclude(authors='')
             .order_by('-books_count')[:6]
         )
 
@@ -47,28 +46,86 @@ class BookQuerySet(models.QuerySet):
         )
 
 
+class Author(models.Model):
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    openlibrary_id = models.CharField(
+        max_length=100, 
+        unique=True, 
+        blank=True, 
+        null=True
+    )
+    biography = models.TextField(blank=True)
+    
+    class Meta:
+        db_table = 'authors'
+        verbose_name = 'Autor'
+        verbose_name_plural = 'Autores'
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['openlibrary_id']),
+        ]
+    
+    def __str__(self):
+        return self.name
+
+
+class ISBN(models.Model):
+    """Modelo para ISBNs (un libro puede tener múltiples ISBNs)"""
+    book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='isbns')
+    isbn = models.CharField(max_length=20, unique=True, db_index=True)
+    format = models.CharField(
+        max_length=10, 
+        choices=[('10', 'ISBN-10'), ('13', 'ISBN-13')],
+        default='13'
+    )
+    
+    class Meta:
+        db_table = 'isbns'
+        verbose_name = 'ISBN'
+        verbose_name_plural = 'ISBNs'
+    
+    def __str__(self):
+        return self.isbn
+
+
 class Book(models.Model):
-    openlibrary_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    title = models.CharField(max_length=500)
-    authors = models.JSONField()  # Lista de autores
-    publish_date = models.CharField(max_length=100, blank=True)  # Año de publicación
-    isbn = models.JSONField(blank=True, null=True)  # Lista de ISBNs
+    openlibrary_id = models.CharField(
+        max_length=50, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        db_index=True
+    )
+    title = models.CharField(max_length=500, db_index=True)
+    authors = models.ManyToManyField(Author, related_name='books')  # CAMBIO: ManyToMany en lugar de JSONField
+    publish_date = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)  # NUEVO: agregamos descripción
     number_of_pages = models.IntegerField(blank=True, null=True)
     cover_url = models.URLField(blank=True)
     categories = models.ManyToManyField(Category, related_name='libros')
     stock = models.IntegerField(default=0)
     available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    updated_at = models.DateTimeField(auto_now=True)  # NUEVO: rastrear cambios
+    
     objects = BookQuerySet.as_manager()
-
+    
     class Meta:
         db_table = 'books'
         verbose_name = 'Libro'
         verbose_name_plural = 'Libros'
-
+        indexes = [
+            models.Index(fields=['title']),
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['available', 'stock']),
+        ]
+    
     def __str__(self):
         return self.title
+    
+    def get_authors_display(self):
+        """Retorna los autores como string para templates"""
+        return ', '.join(self.authors.values_list('name', flat=True))
 
 
 class BookStock(models.Model):

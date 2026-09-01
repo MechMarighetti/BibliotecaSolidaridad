@@ -1,104 +1,84 @@
-from datetime import date
+import logging
 from django.urls import reverse_lazy
 import requests
+from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView
-from django.http import JsonResponse
+from django.http import JsonResponse, request
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import redirect, render
-from django.db.models import Avg
+from django.db.models import Avg, query
 from django.contrib import messages
-from .models import Category
+from .models import Book, Category, Review
 from .forms import BookForm
+from .services import OpenLibraryService
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from .models import Book, Review
 from apps.users.models import UserProfile
+
+logger = logging.getLogger(__name__)
 
 
 class BookSearchView(ListView):
+    """Vista mejorada de búsqueda de libros"""
     model = Book
     template_name = 'books/book_search.html'
     context_object_name = 'local_results'
-
+    paginate_by = 20  # Agregar paginación
+    
     def get_queryset(self):
         query = self.request.GET.get('q', '').strip()
         self.query = query
-        self.openlibrary_results = []
-
+    
         if not query:
             return Book.objects.none()
-
-        local_books = Book.objects.search(query)
-        self.openlibrary_results = self._search_openlibrary(query)
-        return local_books
-
-    def _search_openlibrary(self, query):
-        try:
-            response = requests.get(
-                f"https://openlibrary.org/search.json?q={query}&limit=10", timeout=10
-            )
-            response.raise_for_status()
-            data = response.json()
-            return [
-                {
-                    'title': doc.get('title', ''),
-                    'authors': ", ".join(doc.get('author_name', [])),
-                    'publish_year': doc.get('first_publish_year', ''),
-                    'isbn': ", ".join(doc.get('isbn', [])[:1]) if doc.get('isbn') else '',
-                    'openlibrary_id': (doc.get('edition_key', [None])[0] or doc.get('key')),
-                    'cover_url': (
-                        f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-M.jpg"
-                        if doc.get('cover_i') else None
-                    ),
-                }
-                for doc in data.get('docs', [])
-            ]
-        except Exception:
-            return []
-
+    
+    # Optimizar query con prefetch_related (M2M require esto, no select_related)
+        return Book.objects.filter(
+        title__icontains=query
+    ).prefetch_related('authors').order_by('-created_at').distinct()[:20]
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        if self.query:
+            # Usar el servicio para buscar en OpenLibrary
+            context['openlibrary_results'] = OpenLibraryService.search_books(self.query)
+            context['existing_ids'] = set(
+                Book.objects.values_list('openlibrary_id', flat=True)
+            )
+        
         context['query'] = self.query
-        context['openlibrary_results'] = self.openlibrary_results
         context['searched'] = bool(self.query)
-        context['existing_ids'] = set(Book.objects.values_list('openlibrary_id', flat=True))
+        
         return context
 
 
-class SearchOpenLibraryView(View):
+class SearchOpenLibraryAPIView(LoginRequiredMixin, UserPassesTestMixin, View):
+    
+    def test_func(self):
+        # Solo bibliotecarios pueden usar esta API
+        return self.request.user.role in ['librarian', 'admin']
+    
     def get(self, request):
         query = request.GET.get('q', '').strip()
+    
         if not query:
-            return JsonResponse({'error': 'Query parameter required'}, status=400)
+            return JsonResponse(
+            {'error': 'Query parameter required'}, 
+            status=400
+        )
+    
         try:
-            response = requests.get(
-                f"https://openlibrary.org/search.json?q={query}&limit=10", timeout=10
-            )
-            response.raise_for_status()
-            data = response.json()
-            books = [
-                {
-                    'title': doc.get('title', ''),
-                    'author_name': doc.get('author_name', []),
-                    'publish_year': doc.get('first_publish_year', ''),
-                    'number_of_pages': doc.get('number_of_pages', ''),
-                    'isbn': doc.get('isbn', []),
-                    'description': doc.get('description', ''),
-                    'cover_url': (
-                        f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-M.jpg"
-                        if doc.get('cover_i') else None
-                    ),
-                }
-                for doc in data.get('docs', [])
-            ]
+            books = OpenLibraryService.search_books(query)
             return JsonResponse({'books': books})
-        except requests.RequestException:
-            return JsonResponse({'error': 'Error connecting to OpenLibrary'}, status=502)
-        except Exception:
-            return JsonResponse({'error': 'Internal server error'}, status=500)
-
-
+        except Exception as e:
+        # ✅ exc_info=True captura el traceback completo
+            logger.error(f"Error in SearchOpenLibraryAPIView: {str(e)}", exc_info=True)
+        return JsonResponse(
+            {'error': 'Internal server error'}, 
+            status=500
+        )
+        
 class AddBookView(LoginRequiredMixin, UserPassesTestMixin, View):
     """Vista para agregar libros usando el BookForm"""
     model = Book
@@ -324,8 +304,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['user_favorites'] = profile.favorite_books.all()
 
         # Préstamos activos e historial
-        context['active_loans'] = self.request.user.loan_set.filter(status='active').select_related('book')
-        context['loan_history'] = self.request.user.loan_set.exclude(status='active').select_related('book')
+        context['active_loans'] = self.request.user.loans.filter(status='active').select_related('book')
+        context['loan_history'] = self.request.user.loans.exclude(status='active').select_related('book')
 
         return context
 
