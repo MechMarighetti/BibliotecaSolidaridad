@@ -397,21 +397,21 @@
         
         <main class="card-carnet">
             <div class="avatar-container">
-                <img src="https://ui-avatars.com/api/?name=Maria+Gonzalez&background=4361ee&color=fff&size=120&bold=true" alt="Avatar de María González" class="avatar">
+                <img src="$[user.profile_picture]" alt="Avatar de $[user.first_name] $[user.last_name]" class="avatar">
             </div>
             
             <div class="user-info">
-                <h2 class="user-name">María González</h2>
+                <h2 class="user-name">$[user.first_name] $[user.last_name]</h2>
                 
                 <div class="user-details">
                     <div class="detail-item">
                         <span class="detail-label">Número de Carnet</span>
-                        <span class="detail-value">BL-2023-4582</span>
+                        <span class="detail-value">$[user.virtual_card_id]</span>
                     </div>
                     
                     <div class="detail-item">
                         <span class="detail-label">Fecha de Registro</span>
-                        <span class="detail-value">15/03/2023</span>
+                        <span class="detail-value">$[user.registration_date]</span>
                     </div>
                     
                     <div class="detail-item">

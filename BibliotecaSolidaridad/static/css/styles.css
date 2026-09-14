@@ -47,6 +47,10 @@ main {
     transform: translateY(-5px);
 }
 
+.fondo-var {
+    background-color: var(--orange) !important;
+}
+
 .hero-section {
     background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 100%);
     color: var(--blue);
@@ -213,3 +217,4 @@ a.text-success:hover {
         padding-right: 0.4rem;
     }
 }
+

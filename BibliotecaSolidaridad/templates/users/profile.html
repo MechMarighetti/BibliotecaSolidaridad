@@ -1,4 +1,5 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Mi Perfil - Biblioteca{% endblock %} {% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %}Mi Perfil - Biblioteca{% endblock %} 
+{% block content %}
 <div class="container mt-4">
     <div class="row">
         <!-- Información del Usuario -->
@@ -9,7 +10,7 @@
                 </div>
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    <img src="{% static user.profile.profile_picture %}" alt="Avatar de {{ user.username }}" class="avatar">
                     </div>
                     <h5>{{ user.get_full_name }}</h5>
                     <p class="text-muted">{{ user.get_role_display }}</p>
@@ -47,7 +48,7 @@
                     {% if user.profile.virtual_card_id %}
                     <div class="text-center mt-3">
                         <div class="border rounded p-3 bg-light">
-                            <h6>Carnet Virtual</h6>
+                            <h6><a href="{{ user.profile.virtual_card }}" target="_blank">Carnet Virtual</a></h6>
                             <code>{{ user.profile.virtual_card_id }}</code>
                         </div>
                     </div>
