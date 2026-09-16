@@ -1,16 +1,10 @@
-from django import forms
-from .models import Book, Category
+
 from django import forms
 from .models import Book, Category, Author, ISBN
 
 
 class BookForm(forms.ModelForm):
-    """
-    Formulario para crear/editar libros.
-    - `authors_input`: string separado por comas (crea autores si no existen).
-    - `isbn_input`: string separado por comas (crea ISBNs asociados).
-    Ambos son campos extra que NO van en Meta.fields.
-    """
+
 
     authors_input = forms.CharField(
         label="Autores",
@@ -42,7 +36,7 @@ class BookForm(forms.ModelForm):
         model = Book
         fields = [
             'title', 'publish_date', 'description', 'number_of_pages',
-            'cover_url', 'categories', 'stock', 'available',
+            'cover_url', 'categories', 'stock', 'available', 'authors', 'isbn', 'number_of_pages'
         ]
         widgets = {
             'title': forms.TextInput(attrs={

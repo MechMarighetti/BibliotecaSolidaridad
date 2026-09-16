@@ -5,9 +5,24 @@
     --light-blue: #9cc0e7;
     --white: #fff5ed;
     --blue: #1c4178;
+    --font-display: 'Poppins', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+    --transition: all 0.3s ease;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
 }
@@ -111,7 +126,7 @@ main {
 }
 
 .portada {
-    opacity:100%;
+    opacity: 100%;
 }
 
 form input,
@@ -218,3 +233,60 @@ a.text-success:hover {
     }
 }
 
+.shelf-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shelf-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+}
+
+.shelf-cover {
+    height: 240px;
+    object-fit: cover;
+    background-color: #f8f9fa;
+}
+
+.shelf-cover-placeholder {
+    height: 240px;
+    background-color: #f1f3f5;
+}
+
+.stretched-link-title::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+/* Evita que el stretched-link tape los formularios */
+.shelf-card form,
+.shelf-card select,
+.shelf-card input,
+.shelf-card button {
+    position: relative;
+    z-index: 2;
+}
+
+.custom-alert {
+    margin: 1rem 0;
+    border-radius: 0.375rem;
+}
+
+.btn-use-book {
+    white-space: nowrap;
+    min-width: 70px;
+}
+
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+}

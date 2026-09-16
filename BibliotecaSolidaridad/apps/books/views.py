@@ -1,22 +1,23 @@
 import logging
 
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.views import View
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
-from ..users.mixin import LibrarianRequiredMixin, AdminRequiredMixin, MemberRequiredMixin
+from ..users.mixin import LibrarianRequiredMixin
 from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Avg
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Book, Category, Review, Author, ISBN
+from .models import Book, Category, Review, Author, ISBN, ReadingStatus
 from .forms import BookForm
 from .services import OpenLibraryService
 from apps.users.models import UserProfile
+from django.db.models import Count, Sum, Avg, Max, Min, Q, F
 
 logger = logging.getLogger(__name__)
 
@@ -221,59 +222,12 @@ class RemoveBookView(LibrarianRequiredMixin, View):
 # Importar desde OpenLibrary
 # ---------------------------------------------------------------------------
 
-class ImportFromOpenLibraryView(LibrarianRequiredMixin, View):
-    """Importa un libro desde OpenLibrary a la biblioteca local."""
-
-    def post(self, request):
-        openlibrary_id = request.POST.get('openlibrary_id', '').strip()
-        referer = request.META.get('HTTP_REFERER', '/')
-
-        if not openlibrary_id:
-            messages.error(request, 'ID de OpenLibrary requerido.')
-            return redirect(referer)
-
-        existing = Book.objects.filter(openlibrary_id=openlibrary_id).first()
-        if existing:
-            messages.warning(request, f'El libro "{existing.title}" ya está en la biblioteca.')
-            return redirect('book_detail', pk=existing.pk)
-
-        try:
-            data = OpenLibraryService.get_book_details(openlibrary_id)
-            if not data:
-                messages.error(request, 'No se pudo obtener el libro desde OpenLibrary.')
-                return redirect(referer)
-
-            with transaction.atomic():
-                book = Book.objects.create(
-                    openlibrary_id=openlibrary_id,
-                    title=data.get('title', 'Sin título'),
-                    publish_date=data.get('publish_date', ''),
-                    description=data.get('description', ''),
-                    number_of_pages=data.get('number_of_pages'),
-                    cover_url=data.get('cover_url', ''),
-                    stock=1,
-                    available=True,
-                )
-                for author_name in data.get('authors', []):
-                    author, _ = Author.objects.get_or_create(name=author_name)
-                    book.authors.add(author)
-                for isbn_str in data.get('isbn', []):
-                    ISBN.objects.get_or_create(
-                        isbn=isbn_str,
-                        defaults={'book': book}
-                    )
-
-            messages.success(request, f'Libro "{book.title}" importado correctamente.')
-            return redirect('book_detail', pk=book.pk)
-
-        except Exception as e:
-            logger.error(f'Error importando libro: {e}', exc_info=True)
-            messages.error(request, 'Error al importar el libro.')
-            return redirect(referer)
-
-
 class SearchOpenLibraryAPIView(LibrarianRequiredMixin, View):
-    """API JSON para búsquedas puntuales en OpenLibrary."""
+    """
+    Búsqueda en OpenLibrary con dos modos:
+      - Si el query es un ISBN → devuelve UNA edición exacta.
+      - Si no → devuelve obras; cada una puede expandirse para ver sus ediciones.
+    """
 
     def get(self, request):
         query = request.GET.get('q', '').strip()
@@ -281,12 +235,47 @@ class SearchOpenLibraryAPIView(LibrarianRequiredMixin, View):
             return JsonResponse({'error': 'Query parameter required'}, status=400)
 
         try:
+            # Modo 1: el usuario tipeó un ISBN
+            isbn = OpenLibraryService.looks_like_isbn(query)
+            if isbn:
+                edition = OpenLibraryService.get_edition_by_isbn(isbn)
+                if edition:
+                    return JsonResponse({
+                        'mode': 'isbn',
+                        'edition': edition,
+                    })
+                return JsonResponse({
+                    'mode': 'isbn',
+                    'edition': None,
+                    'message': f'No se encontró el ISBN {isbn} en OpenLibrary.',
+                })
+
+            # Modo 2: búsqueda normal
             books = OpenLibraryService.search_books(query)
-            return JsonResponse({'books': books})
+            return JsonResponse({
+                'mode': 'search',
+                'books': books,
+            })
+
         except Exception as e:
             logger.error(f'Error en SearchOpenLibraryAPIView: {e}', exc_info=True)
             return JsonResponse({'error': 'Internal server error'}, status=500)
 
+
+class WorkEditionsAPIView(LibrarianRequiredMixin, View):
+    """Devuelve las ediciones de una obra para que el bibliotecario elija."""
+
+    def get(self, request):
+        work_id = request.GET.get('work_id', '').strip()
+        if not work_id:
+            return JsonResponse({'error': 'work_id requerido'}, status=400)
+
+        editions = OpenLibraryService.get_work_editions(work_id)
+        return JsonResponse({
+            'work_id': work_id,
+            'editions': editions,
+            'count': len(editions),
+        })
 
 # ---------------------------------------------------------------------------
 # Autores y categorías
@@ -335,6 +324,49 @@ class CategoryDetailView(DetailView):
 # ---------------------------------------------------------------------------
 # Reseñas
 # ---------------------------------------------------------------------------
+class MyShelfView(LoginRequiredMixin, ListView):
+    model = ReadingStatus
+    template_name = 'books/my_shelf.html'
+    context_object_name = 'items'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = (
+            ReadingStatus.objects
+            .filter(user=self.request.user)
+            .select_related('book')
+            .prefetch_related('book__authors', 'book__categories')
+        )
+        status = self.request.GET.get('status')
+        if status in dict(ReadingStatus.Status.choices):
+            qs = qs.filter(status=status)
+        return qs.order_by('-updated_at')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # Contadores por estantería en UNA sola query
+        raw_counts = (
+            ReadingStatus.objects
+            .filter(user=self.request.user)
+            .values('status')
+            .annotate(total=Count('id'))
+        )
+        counts = {c['status']: c['total'] for c in raw_counts}
+
+        # Lista de pestañas lista para iterar en el template
+        ctx['shelf_tabs'] = [
+            {
+                'value': value,
+                'label': label,
+                'count': counts.get(value, 0),
+                'url': f'?status={value}',
+            }
+            for value, label in ReadingStatus.Status.choices
+        ]
+        ctx['total_count'] = sum(counts.values())
+        ctx['active_status'] = self.request.GET.get('status', '')
+        return ctx
 
 def _validate_rating_comment(request):
     rating = request.POST.get('rating')
@@ -447,6 +479,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         profile = self.get_object()
+        ctx['user'] = self.request.user
+        ctx['profile'] = profile
         ctx['user_favorites'] = profile.favorite_books.all()
         ctx['active_loans'] = self.request.user.loans.filter(
             status='active'

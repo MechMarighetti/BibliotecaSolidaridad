@@ -31,6 +31,33 @@
                 </div>
                 {% endif %}
             </div>
+            <div class="container">
+        
+
+            {% if featured_event %}
+                <div class="col-lg-5 mt-4 mt-lg-0">
+                    <div class="card border-primary shadow-sm">
+                        <div class="card-body">
+                            <span class="badge bg-primary mb-2">Próximo evento</span>
+                            <h3 class="h5">{{ featured_event.title }}</h3>
+                            <p class="text-muted small mb-2">
+                                <i class="far fa-calendar"></i>
+                                {{ featured_event.date|date:"l d/m/Y H:i" }}
+                                {% if featured_event.location %}
+                                    · <i class="fas fa-map-marker-alt"></i>
+                                    {{ featured_event.location }}
+                                {% endif %}
+                            </p>
+                            <p class="small">{{ featured_event.description|truncatewords:20 }}</p>
+                            <a href="{% url 'event_detail' featured_event.pk %}" class="btn btn-sm btn-outline-primary">
+                                Ver detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
             <div class="col-lg-6">
                 <img class="portada" src="{% static 'images/reader.svg' %}" alt="Biblioteca" class="img-fluid">
             </div>
@@ -40,6 +67,7 @@
 
 <!-- Stats Section -->
 <section class="py-5">
+    
     <div class="container">
         <div class="row text-center">
             <div class="col-md-3">
@@ -64,6 +92,28 @@
                 <div class="stats-card p-3">
                     <h3 class="text-warning">{{ stats.categories }}</h3>
                     <p class="text-muted">Categorías</p>
+                </div>
+            </div>
+            <div class="row align-items-center">
+            <div class="col-lg-7">
+                <p class="lead text-muted">Buscá por título, autor, ISBN o materia.</p>
+
+                <form action="{% url 'book_search' %}" method="get" class="row g-2">
+                    <div class="col-md-9">
+                        <input type="search" name="q" class="form-control form-control-lg"
+                               placeholder="¿Qué libroestás buscando?" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-3">
+                    <a href="{% url 'book_list' %}" class="btn btn-outline-secondary btn-sm">
+                        Explorar catálogo completo
+                    </a>
                 </div>
             </div>
         </div>

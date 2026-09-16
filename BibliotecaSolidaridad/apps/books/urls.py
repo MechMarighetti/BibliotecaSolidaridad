@@ -3,6 +3,7 @@ from .views import (
     BookSearchView,
     AddBookView,
     BookDetailView,
+    MyShelfView,
     ProfileView,
     SearchOpenLibraryAPIView,
     AddReviewView,
@@ -11,12 +12,13 @@ from .views import (
     DeleteReviewView,
     RemoveFavoriteView,
     RemoveBookView,
+    WorkEditionsAPIView,
+    
 )
 
 urlpatterns = [
     path('search/', BookSearchView.as_view(), name='book_search'),
     path('add/', AddBookView.as_view(), name='add_book'),
-    path('api/search-openlibrary/', SearchOpenLibraryAPIView.as_view(), name='search_openlibrary_api'),
     path('<int:pk>/', BookDetailView.as_view(), name='book_detail'),
     path('<int:book_id>/review/', AddReviewView.as_view(), name='add_review'),
     path('<int:book_id>/review/edit/', EditReviewView.as_view(), name='edit_review'),
@@ -25,4 +27,8 @@ urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
     path('favorites/remove/<int:book_id>/', RemoveFavoriteView.as_view(), name='remove_favorite'),
     path('remove/<int:book_id>/', RemoveBookView.as_view(), name='remove_book'),
+    path('list/', BookSearchView.as_view(), name='book_list'),
+    path('shelf/', MyShelfView.as_view(), name='my_shelf'),
+    path('api/search-openlibrary/', SearchOpenLibraryAPIView.as_view(), name='search_openlibrary'),
+    path('api/work-editions/', WorkEditionsAPIView.as_view(), name='work_editions'),
 ]

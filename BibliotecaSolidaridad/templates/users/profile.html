@@ -90,7 +90,7 @@
                                     <div class="col-8">
                                         <div class="card-body py-2">
                                             <h6 class="card-title">{{ book.title|truncatewords:4 }}</h6>
-                                            <p class="card-text small text-muted">{{ book.author }}</p>
+                                            <p class="card-text small text-muted">{{ book.author_name }}</p>
                                             <div class="d-flex justify-content-between">
                                                 <a href="{% url 'book_detail' book.id %}" class="btn btn-sm btn-outline-primary">
                                                     Ver Detalles
@@ -143,7 +143,7 @@
                                 <tr>
                                     <td>
                                         <strong>{{ loan.book.title }}</strong><br />
-                                        <small class="text-muted">{{ loan.book.author }}</small>
+                                        <small class="text-muted">{{ loan.book.author_name }}</small>
                                     </td>
                                     <td>{{ loan.loan_date|date:"d M Y" }}</td>
                                     <td>

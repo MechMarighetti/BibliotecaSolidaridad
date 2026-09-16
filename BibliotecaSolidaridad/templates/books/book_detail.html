@@ -42,8 +42,8 @@
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
-                        <div class="col-sm-6"><strong>Autor:</strong> {{ book.author }}</div>
-                        <div class="col-sm-6"><strong>ISBN:</strong> {{ book.isbn|default:"No disponible" }}</div>
+                        <div class="col-sm-6"><strong>Autor:</strong> {{ book.get_authors_display }}</div>
+                        <div class="col-sm-6"><strong>ISBN:</strong> {{ book.isbns.all|join:", "|default:"No disponible" }}</div>
                     </div>
 
                     <div class="row mb-3">

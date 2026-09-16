@@ -99,16 +99,18 @@ class Book(models.Model):
         max_length=50, unique=True, blank=True, null=True, db_index=True
     )
     title = models.CharField(max_length=500, db_index=True)
-    authors = models.ManyToManyField(Author, related_name='books')
+    authors = models.ManyToManyField(Author, related_name='books', blank=True)
     publish_date = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
     number_of_pages = models.IntegerField(blank=True, null=True)
+    isbn = models.ManyToManyField(ISBN, related_name='books', blank=True)
     cover_url = models.URLField(blank=True)
-    categories = models.ManyToManyField(Category, related_name='libros')
+    categories = models.ManyToManyField(Category, related_name='books')
     stock = models.IntegerField(default=0)
     available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
 
     objects = BookQuerySet.as_manager()
 
@@ -181,3 +183,24 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.book} ({self.rating}/5)"
+
+class ReadingStatus(models.TextChoices):
+    
+    TO_READ = 'to_read', 'Por leer'
+    READING = 'reading', 'Leyendo'
+    READ = 'read', 'Leído'
+
+    @classmethod
+    def active_statuses(cls):
+        """Estados que representan actividad actual del usuario."""
+        return [cls.READING]
+
+    @classmethod
+    def completed_statuses(cls):
+        """Estados que representan un ciclo cerrado."""
+        return [cls.READ]
+
+    @classmethod
+    def default(cls):
+        """Estado por defecto al agregar un libro a la estantería."""
+        return cls.TO_READ

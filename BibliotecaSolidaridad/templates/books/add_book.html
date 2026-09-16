@@ -59,6 +59,9 @@
                                 <div class="mb-3">
                                     <label for="{{ form.authors_input.id_for_label }}" class="form-label">Autores
                                         *</label>
+                                    {% for author in authors %}
+                                    {{ author.name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
                                     {{ form.authors_input }}
                                     {% if form.authors_input.errors %}
                                     <div class="text-danger small">{{ form.authors_input.errors }}</div>
@@ -73,6 +76,10 @@
                                 <div class="mb-3">
                                     <label for="{{ form.isbn_input.id_for_label }}" class="form-label">ISBN</label>
                                     {{ form.isbn_input }}
+                                    {{ form.isbns.errors }}
+                                    {% for isbn in isbns %}
+                                    {{ isbn.isbn }}
+                                    {% endfor %}
                                     {% if form.isbn_input.errors %}
                                     <div class="text-danger small">{{ form.isbn_input.errors }}</div>
                                     {% endif %}
@@ -276,172 +283,197 @@
         return true;
     });
 
-    // Mostrar resultados de búsqueda
-    function displaySearchResults(books) {
-        const resultsList = document.getElementById('results-list');
-        resultsList.innerHTML = '';
 
-        if (books.length === 0) {
-            resultsList.innerHTML = `
-            <div class="text-center text-muted py-3">
-                <i class="fas fa-search fa-2x mb-2"></i>
-                <p>No se encontraron resultados.</p>
-            </div>
-        `;
-            return;
+    document.getElementById('search-openlibrary').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const query = document.getElementById('search-query').value.trim();
+    if (!query) return;
+
+    const resultsDiv = document.getElementById('search-results');
+    const resultsList = document.getElementById('results-list');
+
+    resultsList.innerHTML = `
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Buscando en OpenLibrary...</p>
+        </div>`;
+    resultsDiv.style.display = 'block';
+
+    try {
+        const resp = await fetch(`/books/api/search-openlibrary/?q=${encodeURIComponent(query)}`);
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+
+        if (data.mode === 'isbn') {
+            if (!data.edition) {
+                resultsList.innerHTML = `<div class="alert alert-info">${escapeHtml(data.message)}</div>`;
+            } else {
+                resultsList.innerHTML = '<h6 class="mb-2">Edición encontrada por ISBN:</h6>';
+                resultsList.appendChild(buildEditionCard(data.edition, data.edition.title));
+            }
+        } else {
+            renderWorksList(data.books || []);
         }
+    } catch (err) {
+        console.error(err);
+        resultsList.innerHTML = `<div class="alert alert-danger">Error: ${escapeHtml(err.message)}</div>`;
+    }
+});
 
-        books.forEach(book => {
-            const bookData = {
-                title: book.title || 'Sin título',
-                authors: book.author_name ? book.author_name.join(', ') : 'Autor desconocido',
-                isbn: book.isbn ? book.isbn.join(', ') : '',
-                publish_year: book.publish_year || '',
-                cover_url: book.cover_url || '',
-                openlibrary_id: book.openlibrary_id || '',
-                number_of_pages: book.number_of_pages || ''
-            };
+// ============================================================
+// Render de lista de obras (colapsables)
+// ============================================================
+function renderWorksList(books) {
+    const resultsList = document.getElementById('results-list');
+    resultsList.innerHTML = '';
 
-            const bookItem = document.createElement('div');
-            bookItem.className = 'list-group-item';
-            bookItem.innerHTML = `
+    if (books.length === 0) {
+        resultsList.innerHTML = `<div class="text-center text-muted py-3">Sin resultados</div>`;
+        return;
+    }
+
+    books.forEach((book, idx) => {
+        const authors = Array.isArray(book.author_name)
+            ? book.author_name.join(', ')
+            : (book.author_name || 'Autor desconocido');
+
+        const workKey = book.work_key || book.openlibrary_id;
+
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.innerHTML = `
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1 me-3">
-                    <h6 class="mb-1">${escapeHtml(bookData.title)}</h6>
-                    <p class="mb-1 text-muted">${escapeHtml(bookData.authors)}</p>
+                    <h6 class="mb-1">${escapeHtml(book.title || 'Sin título')}</h6>
+                    <p class="mb-1 text-muted small">${escapeHtml(authors)}</p>
                     <small class="text-muted">
-                        ${bookData.publish_year ? `Año: ${bookData.publish_year} • ` : ''}
-                        ${bookData.number_of_pages ? `Páginas: ${bookData.number_of_pages} • ` : ''}
-                        ${bookData.isbn ? `ISBN: ${bookData.isbn.substring(0, 20)}${bookData.isbn.length > 20 ? '...' : ''}` : ''}
+                        ${book.publish_year ? `Primera edición: ${book.publish_year}` : ''}
                     </small>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary btn-use-book" 
-                        data-book='${JSON.stringify(bookData)}'
-                        title="Usar este libro en el formulario">
-                    <i class="fas fa-plus"></i> Usar
+                <button type="button" class="btn btn-sm btn-outline-secondary btn-toggle-editions">
+                    <i class="fas fa-chevron-down"></i> Ver ediciones
                 </button>
             </div>
+            <div class="editions-container mt-3" style="display:none;"></div>
         `;
-            resultsList.appendChild(bookItem);
-        });
 
-        // Agregar event listeners a los botones
-        document.querySelectorAll('.btn-use-book').forEach(button => {
-            button.addEventListener('click', function () {
-                try {
-                    const bookData = JSON.parse(this.dataset.book);
-                    fillBookForm(bookData);
+        const toggleBtn = item.querySelector('.btn-toggle-editions');
+        const editionsContainer = item.querySelector('.editions-container');
+        let loaded = false;
 
-                    // Feedback visual
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    this.classList.remove('btn-outline-primary');
-                    this.classList.add('btn-success');
-                    this.disabled = true;
+        toggleBtn.addEventListener('click', async () => {
+            // Toggle
+            const isOpen = editionsContainer.style.display !== 'none';
+            if (isOpen) {
+                editionsContainer.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Ver ediciones';
+                return;
+            }
+            editionsContainer.style.display = 'block';
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar';
 
-                } catch (error) {
-                    console.error('Error parsing book data:', error);
-                    showAlert('Error al cargar los datos del libro', 'danger');
+            if (loaded) return;
+            loaded = true;
+
+            editionsContainer.innerHTML = `
+                <div class="text-center py-2">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                    <small class="text-muted ms-2">Cargando ediciones...</small>
+                </div>`;
+
+            try {
+                const r = await fetch(`/books/api/work-editions/?work_id=${encodeURIComponent(workKey)}`);
+                const payload = await r.json();
+
+                if (!payload.editions || payload.editions.length === 0) {
+                    editionsContainer.innerHTML = `
+                        <div class="alert alert-warning py-2 mb-0 small">
+                            No hay ediciones registradas para esta obra.
+                        </div>`;
+                    return;
                 }
-            });
+
+                editionsContainer.innerHTML = '';
+                payload.editions.forEach(ed => {
+                    editionsContainer.appendChild(buildEditionCard(ed, book.title, book.author_name, book.publish_year));
+                });
+            } catch (err) {
+                console.error(err);
+                editionsContainer.innerHTML = `<div class="alert alert-danger py-2 small">Error al cargar ediciones.</div>`;
+                loaded = false;
+            }
         });
-    }
 
-    // Llenar formulario con datos del libro
-    function fillBookForm(bookData) {
-        // Llenar campos básicos
-        document.getElementById('id_title').value = bookData.title;
-        document.getElementById('id_authors_input').value = bookData.authors;
-        document.getElementById('id_isbn_input').value = bookData.isbn;
-        document.getElementById('id_publish_date').value = bookData.publish_year;
-        document.getElementById('id_cover_url').value = bookData.cover_url;
-        document.getElementById('id_number_of_pages').value = bookData.number_of_pages;
-        document.getElementById('id_openlibrary_id').value = bookData.openlibrary_id;
+        resultsList.appendChild(item);
+    });
+}
 
-        // Ocultar resultados
-        document.getElementById('search-results').style.display = 'none';
+// ============================================================
+// Card individual de edición
+// ============================================================
+function buildEditionCard(edition, fallbackTitle, fallbackAuthor, fallbackYear) {
+    const publishers = (edition.publishers || []).join(', ');
+    const isbn = edition.isbn || (edition.isbn_all && edition.isbn_all[0]) || '';
 
-        // Mostrar mensaje de éxito
-        showAlert(`Datos de "${bookData.title}" cargados en el formulario`, 'success');
-
-        // Scroll al formulario
-        document.getElementById('book-form').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-
-    // Función para mostrar alertas
-    function showAlert(message, type = 'info') {
-        // Remover alerta existente si hay
-        const existingAlert = document.querySelector('.custom-alert');
-        if (existingAlert) {
-            existingAlert.remove();
-        }
-
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
-        alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    const card = document.createElement('div');
+    card.className = 'border rounded p-2 mb-2 bg-light';
+    card.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1 me-2">
+                <div class="fw-bold small">${escapeHtml(edition.title || fallbackTitle)}</div>
+                <div class="text-muted small">
+                    ${edition.publish_date ? escapeHtml(edition.publish_date) : 'Sin fecha'}
+                    ${publishers ? ` · ${escapeHtml(publishers)}` : ''}
+                    ${edition.number_of_pages ? ` · ${edition.number_of_pages} pág.` : ''}
+                    ${edition.physical_format ? ` · ${escapeHtml(edition.physical_format)}` : ''}
+                </div>
+                ${isbn ? `<div class="small mt-1"><strong>ISBN:</strong> ${escapeHtml(isbn)}</div>` : '<div class="small mt-1 text-warning">Sin ISBN registrado</div>'}
+            </div>
+            <button type="button" class="btn btn-sm btn-primary btn-pick-edition">
+                <i class="fas fa-check"></i> Usar
+            </button>
+        </div>
     `;
 
-        // Insertar después del header
-        const header = document.querySelector('.card-header');
-        header.parentNode.insertBefore(alertDiv, header.nextSibling);
-
-        // Auto-remover después de 5 segundos
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    }
-
-    // Validación del formulario
-    document.getElementById('book-form').addEventListener('submit', function (e) {
-        const title = document.getElementById('id_title').value.trim();
-        const authors = document.getElementById('id_authors_input').value.trim();
-
-        if (!title) {
-            e.preventDefault();
-            showAlert('El campo Título es obligatorio', 'danger');
-            document.getElementById('id_title').focus();
-            return false;
-        }
-
-        if (!authors) {
-            e.preventDefault();
-            showAlert('El campo Autores es obligatorio', 'danger');
-            document.getElementById('id_authors_input').focus();
-            return false;
-        }
-
-        return true;
+    card.querySelector('.btn-pick-edition').addEventListener('click', function () {
+        fillBookFormFromEdition(edition, fallbackTitle, fallbackAuthor, fallbackYear);
+        this.innerHTML = '<i class="fas fa-check-double"></i> Cargado';
+        this.disabled = true;
     });
+
+    return card;
+}
+
+// ============================================================
+// Llenar el form con la edición elegida
+// ============================================================
+function fillBookFormFromEdition(edition, fallbackTitle, fallbackAuthor, fallbackYear) {
+    const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value ?? '';
+    };
+
+    const isbn = edition.isbn
+        || (edition.isbn_all && edition.isbn_all[0])
+        || (edition.isbn_13 && edition.isbn_13[0])
+        || (edition.isbn_10 && edition.isbn_10[0])
+        || '';
+
+    const authors = Array.isArray(edition.authors)
+        ? edition.authors.join(', ')
+        : '';
+
+    set('id_title', edition.title || fallbackTitle || '');
+    set('id_authors_input', authors || fallbackAuthor || '');
+    set('id_isbn_input', isbn);
+    set('id_publish_date', edition.publish_date || '');
+    set('id_cover_url', edition.cover_url || '');
+    set('id_number_of_pages', edition.number_of_pages || '');
+    set('id_openlibrary_id', edition.olid || '');
+
+    document.getElementById('search-results').style.display = 'none';
+    showAlert(`Edición cargada: ${edition.title || fallbackTitle}`, 'success');
+    document.getElementById('book-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 </script>
-
-<style>
-    .custom-alert {
-        margin: 1rem 0;
-        border-radius: 0.375rem;
-    }
-
-    .btn-use-book {
-        white-space: nowrap;
-        min-width: 70px;
-    }
-
-    .list-group-item {
-        transition: background-color 0.2s;
-    }
-
-    .list-group-item:hover {
-        background-color: #f8f9fa;
-    }
-
-    .spinner-border {
-        width: 2rem;
-        height: 2rem;
-    }
-</style>
 {% endblock %}
