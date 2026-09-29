@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth import get_user_model
 from apps.books.models import Book
 from django.utils import timezone
@@ -63,14 +63,21 @@ class Loan(models.Model):
     
     def save(self, *args, **kwargs):
         """Valida datos antes de guardar"""
-        if self.due_date and self.loan_date:
-            if self.due_date <= self.loan_date:
+        # Use loan_date if available, otherwise default to now().date()
+        loan_date_val = self.loan_date or timezone.now().date()
+
+        if self.due_date and loan_date_val:
+            if self.due_date <= loan_date_val:
                 raise ValueError("Fecha de vencimiento debe ser posterior a fecha de préstamo")
-        
+
         # Auto-calcular due_date si no está definida
-        if not self.due_date and self.loan_date:
+        if not self.due_date:
             days = self.LOAN_DURATION.get(self.loan_type, 15)
-            self.due_date = self.loan_date + timedelta(days=days)
+            self.due_date = loan_date_val + timedelta(days=days)
+
+        # Asegurar que loan_date esté poblada (auto_now_add puede establecerla en super().save())
+        if not self.loan_date:
+            self.loan_date = loan_date_val
         
         super().save(*args, **kwargs)
     
@@ -201,20 +208,29 @@ class LoanRequest(models.Model):
         if active_loans_count >= self.user.get_loan_limit():
             raise ValueError("Usuario ha alcanzado su límite de préstamos")
         
-        # Crear préstamo
-        loan = Loan.objects.create(
-            user=self.user,
-            book=self.book,
-            loan_type=self.loan_type,
-            status='active'
-        )
-        
-        # Actualizar solicitud
-        self.status = 'approved'
-        self.approved_by = approved_by
-        self.approved_date = timezone.now()
-        self.save()
-        
+        # Crear préstamo dentro de transacción y marcar libro como no disponible
+        with transaction.atomic():
+            loan = Loan.objects.create(
+                user=self.user,
+                book=self.book,
+                loan_type=self.loan_type,
+                status='active'
+            )
+
+            # Marcar libro como no disponible
+            try:
+                self.book.available = False
+                self.book.save()
+            except Exception:
+                # Si marcar libro falla, revertemos la transacción
+                raise
+
+            # Actualizar solicitud
+            self.status = 'approved'
+            self.approved_by = approved_by
+            self.approved_date = timezone.now()
+            self.save()
+
         return loan
     
     def reject(self):
