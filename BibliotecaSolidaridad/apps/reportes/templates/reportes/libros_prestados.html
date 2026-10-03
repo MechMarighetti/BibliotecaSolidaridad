@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Reporte: Libros prestados</h2>
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-2">
+      {{ form.fecha_desde.label_tag }}
+      {{ form.fecha_desde }}
+    </div>
+    <div class="col-md-2">
+      {{ form.fecha_hasta.label_tag }}
+      {{ form.fecha_hasta }}
+    </div>
+    <div class="col-md-2">
+      {{ form.estado.label_tag }}
+      {{ form.estado }}
+    </div>
+    <div class="col-md-2">
+      {{ form.libro.label_tag }}
+      {{ form.libro }}
+    </div>
+    <div class="col-md-2">
+      {{ form.usuario.label_tag }}
+      {{ form.usuario }}
+    </div>
+    <div class="col-md-1">
+      {{ form.solo_vencidos.label_tag }}
+      {{ form.solo_vencidos }}
+    </div>
+    <div class="col-md-1 align-self-end">
+      <button class="btn btn-primary" type="submit">Filtrar</button>
+    </div>
+  </form>
+
+  <div class="mb-3">
+    <a href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}" class="btn btn-outline-secondary">Actualizar</a>
+    <a href="{% url 'reportes:export_loans_csv' %}?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}" class="btn btn-success">Exportar CSV</a>
+    <a href="{% url 'reportes:export_loans_pdf' %}?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}" class="btn btn-danger">Exportar PDF</a>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-2"><strong>Total:</strong> {{ total }}</div>
+    <div class="col-md-2"><strong>Activos:</strong> {{ activos }}</div>
+    <div class="col-md-2"><strong>Devueltos:</strong> {{ devueltos }}</div>
+    <div class="col-md-2"><strong>Vencidos:</strong> {{ vencidos }}</div>
+    <div class="col-md-4"><strong>Promedio días:</strong> {{ avg_days }}</div>
+  </div>
+
+  {% if loans.object_list %}
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Libro</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Fecha préstamo</th>
+          <th>Fecha esperada</th>
+          <th>Fecha devolución</th>
+          <th>Estado</th>
+          <th>Días retraso</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans.object_list %}
+        <tr>
+          <td>{{ loan.id }}</td>
+          <td>{{ loan.book.title }}</td>
+          <td>{{ loan.user.get_full_name|default:loan.user.username }}</td>
+          <td>{{ loan.user.role|default:'—' }}</td>
+          <td>{{ loan.loan_date }}</td>
+          <td>{{ loan.due_date }}</td>
+          <td>{{ loan.return_date|default:'-' }}</td>
+          <td>
+            {% if loan.status == 'active' %}
+              <span class="badge bg-primary">Prestado</span>
+            {% elif loan.status == 'returned' %}
+              <span class="badge bg-success">Devuelto</span>
+            {% elif loan.status == 'overdue' %}
+              <span class="badge bg-danger">Vencido</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ loan.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td>{{ loan.days_delay }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      {% if loans.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ loans.previous_page_number }}">Anterior</a></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Página {{ loans.number }} de {{ loans.paginator.num_pages }}</span></li>
+      {% if loans.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ loans.next_page_number }}">Siguiente</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  {% else %}
+    <div class="alert alert-info">No se encontraron registros con los filtros aplicados.</div>
+  {% endif %}
+
+  <hr/>
+  <h4>Top 5 libros más prestados</h4>
+  <ul>
+    {% for b in top_books %}
+      <li><a href="{% url 'book_detail' b.pk %}">{{ b.title }}</a> ({{ b.count }})</li>
+    {% empty %}
+      <li>No hay datos</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Top 5 usuarios con más préstamos</h4>
+  <ul>
+    {% for u in top_users %}
+      <li>{{ u.get_full_name }} - {{ u.username }} ({{ u.count }})</li>
+    {% empty %}
+      <li>No hay datos</li>
+    {% endfor %}
+  </ul>
+
+</div>
+{% endblock %}
