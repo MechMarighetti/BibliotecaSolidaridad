@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from .models import LoanRequest, Loan
 from apps.books.models import Book
 from django.utils import timezone
+import logging
 from datetime import timedelta
 from django.db.models import Q, Count
 
@@ -65,12 +66,20 @@ class SubmitLoanRequestView(LoginRequiredMixin, CreateView):
             f'Solicitud de préstamo para "{form.instance.book.title}" enviada.'
         )
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # Mostrar errores como mensajes y redirigir al listado para evitar responder 200 con formulario inválido
+        for field, errors in form.errors.items():
+            for err in errors:
+                messages.error(self.request, f"{field}: {err}")
+        return redirect('loans')
     
 class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Panel de gestión de préstamos para bibliotecarios"""
     model = LoanRequest
     template_name = 'loans/loan_management.html'
-    context_object_name = 'pending_requests'
+    # Template expects `loan_requests` variable
+    context_object_name = 'loan_requests'
     
     def test_func(self):
         return self.request.user.role in ['librarian', 'admin']
@@ -82,7 +91,16 @@ class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+        # Ensure loan_requests is present and evaluated to avoid template/qs mismatches
+        loan_reqs = list(self.get_queryset())
+        context['loan_requests'] = loan_reqs
+        # Debug helpers
+        try:
+            context['debug_loan_ids'] = [lr.id for lr in loan_reqs]
+            logging.getLogger('apps').debug('LoansManagerView loan_reqs ids: %s', context['debug_loan_ids'])
+        except Exception:
+            context['debug_loan_ids'] = []
+
         # Préstamos activos
         context['active_loans'] = Loan.objects.filter(
             status='active'
@@ -97,9 +115,10 @@ class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         
         # Estadísticas
         context['stats'] = {
-            'pending_requests': self.get_queryset().count(),
+            'pending_requests': len(loan_reqs),
             'active_loans': Loan.objects.filter(status='active').count(),
-            'overdue_count': context['overdue_loans'].count(),
+            'overdue_loans': context['overdue_loans'].count(),
+            'total_books': Book.objects.filter(available=True).count(),
         }
         
         return context
@@ -110,69 +129,22 @@ class ApproveLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.role in ['librarian', 'admin']
     
-    def post(self, request, request_id):
-        request_obj = get_object_or_404(LoanRequest, id=request_id)
-        
+    def post(self, request, *args, **kwargs):
+        loan_request_id = kwargs.get('loan_request_id') or kwargs.get('request_id')
+        request_obj = get_object_or_404(LoanRequest, id=loan_request_id)
+
         try:
             # El modelo maneja la lógica
             loan = request_obj.approve(approved_by=request.user)
             messages.success(
-                request, 
+                request,
                 f'Préstamo de "{request_obj.book.title}" aprobado. Entrega al usuario.'
             )
         except ValueError as e:
             messages.error(request, str(e))
-        
-        return redirect('loan_management')
 
-
-class RejectLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """Rechazar solicitud de préstamo"""
-    
-    def test_func(self):
-        return self.request.user.role in ['librarian', 'admin']
-    
-    def post(self, request, request_id):
-        request_obj = get_object_or_404(LoanRequest, id=request_id)
-        
-        try:
-            request_obj.reject()
-            messages.success(
-                request, 
-                f'Solicitud de "{request_obj.book.title}" rechazada.'
-            )
-        except ValueError as e:
-            messages.error(request, str(e))
-        
-        return redirect('loan_management')
-    
-class ReturnBookView(LoginRequiredMixin, UserPassesTestMixin, View):
-    
-    def test_func(self):
-        return self.request.user.role in ['librarian', 'admin']
-    
-    def post(self, request, loan_id):
-        loan = get_object_or_404(Loan, id=loan_id, status='active')
-        
-        try:
-            # Actualizar el préstamo
-            loan.status = 'returned'
-            loan.return_date = timezone.now().date()
-            loan.save()
-            
-            # Marcar el libro como disponible
-            loan.book.available = True
-            loan.book.save()
-            
-            messages.success(
-                request, 
-                f'Libro "{loan.book.title}" devuelto por {loan.user.get_full_name()}'
-            )
-            
-        except Exception as e:
-            messages.error(request, f'Error al registrar la devolución: {str(e)}')
-        
         return redirect('manage_loans')
+
 
 
 class RejectLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -238,7 +210,7 @@ class ReturnBookView(LoginRequiredMixin, UserPassesTestMixin, View):
         except Exception as e:
             messages.error(request, f'Error al registrar devolución: {str(e)}')
         
-        return redirect('loans_manager')
+        return redirect('manage_loans')
 
 class UserLoansView(LoginRequiredMixin, ListView):
     template_name = "loans/user_loans.html"

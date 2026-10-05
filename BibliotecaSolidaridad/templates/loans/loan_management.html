@@ -105,6 +105,9 @@
                         <p>No hay solicitudes pendientes de aprobación.</p>
                     </div>
                     {% endif %}
+                    {% if request.user.is_staff %}
+                    <div class="mt-3"><strong>DEBUG IDs:</strong> {{ debug_loan_ids }}</div>
+                    {% endif %}
                 </div>
             </div>
             <div>

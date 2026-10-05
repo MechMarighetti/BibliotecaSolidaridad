@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+	<h2>Solicitar préstamo</h2>
+
+	{% if messages %}
+		{% for message in messages %}
+			<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+		{% endfor %}
+	{% endif %}
+
+	<form method="post">
+		{% csrf_token %}
+		<div class="mb-3">
+			{{ form.book.label_tag }}
+			{{ form.book }}
+			{% if form.book.errors %}
+				<div class="text-danger">{{ form.book.errors }}</div>
+			{% endif %}
+		</div>
+		<div class="mb-3">
+			{{ form.loan_type.label_tag }}
+			{{ form.loan_type }}
+			{% if form.loan_type.errors %}
+				<div class="text-danger">{{ form.loan_type.errors }}</div>
+			{% endif %}
+		</div>
+
+		<button type="submit" class="btn btn-primary">Enviar solicitud</button>
+		<a href="{% url 'loans' %}" class="btn btn-secondary">Volver</a>
+	</form>
+</div>
+{% endblock %}

@@ -5,12 +5,20 @@
         {% csrf_token %}
         <div class="mb-3">
             <label for="book" class="form-label">Selecciona el libro que deseas solicitar:</label>
-            <select class="form-select" id="book" name="book_id" required>
+            <select class="form-select" id="book" name="book" required>
                 {% for book in available_books %}
-                <option value="{{ book.id }}">{{ book.title }} — {{ book.author_name }}</option>
+                <option value="{{ book.id }}">{{ book.title }}{% if book.get_authors_display %} — {{ book.get_authors_display }}{% endif %}</option>
                 {% empty %}
                 <option disabled>No hay libros disponibles en este momento.</option>
                 {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="loan_type" class="form-label">Tipo de préstamo</label>
+            <select class="form-select" id="loan_type" name="loan_type">
+                <option value="normal">Normal (15 días)</option>
+                <option value="express">Express (3 días)</option>
+                <option value="summer">Verano (2 meses)</option>
             </select>
         </div>
         <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Enviar Solicitud</button>
