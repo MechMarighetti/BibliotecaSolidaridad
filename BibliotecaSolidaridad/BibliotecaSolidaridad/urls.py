@@ -30,7 +30,7 @@ urlpatterns = [
     path('loans/', include('apps.loans.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
     path('newsletter/', include('apps.newsletter.urls')),
-    path('cultural-event/', include('apps.culturalEvent.urls')),
+    path('eventos/', include('apps.culturalEvent.urls')),
     path('reportes/', include('apps.reportes.urls')),
 
     # Autenticación

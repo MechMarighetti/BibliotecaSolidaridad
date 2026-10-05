@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from .models import CulturalEvent
 from .forms import CulturalEventForm
 from django.contrib import messages
@@ -42,14 +42,14 @@ class CulturalEventCreateView(LibrarianRequiredMixin, CreateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('cultural_event_list')
+        return reverse_lazy('event_list')
 
 
 class CulturalEventUpdateView(LibrarianRequiredMixin, UpdateView):
     """Permite al bibliotecario modificar un evento."""
     model = CulturalEvent
     form_class = CulturalEventForm
-    template_name = 'books/cultural_event_form.html'
+    template_name = 'culturalEvent/event_form.html'
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -62,14 +62,14 @@ class CulturalEventUpdateView(LibrarianRequiredMixin, UpdateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('cultural_event_list')
+        return reverse_lazy('event_list')
 
 
 class CulturalEventDeleteView(LibrarianRequiredMixin, DeleteView):
     """Permite al bibliotecario eliminar un evento."""
     model = CulturalEvent
-    template_name = 'books/cultural_event_confirm_delete.html'
-    success_url = reverse_lazy('cultural_event_list')
+    template_name = 'culturalEvent/cultural_event_confirm_delete.html'
+    success_url = reverse_lazy('event_list')
 
     def form_valid(self, form):
         title = self.object.title
@@ -81,5 +81,13 @@ class CulturalEventDeleteView(LibrarianRequiredMixin, DeleteView):
         )
 
         return response
+
+    from django.views.generic import DetailView
+
+class CulturalEventDetailView(DetailView):
+    """Muestra los detalles de un evento cultural específico."""
+    model = CulturalEvent
+    template_name = 'culturalEvent/event_detail.html'
+    context_object_name = 'event'
 
 # Create your views here.

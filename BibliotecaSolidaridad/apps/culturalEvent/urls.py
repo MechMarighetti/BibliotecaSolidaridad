@@ -1,12 +1,14 @@
 from django.urls import path
-from .views import (CulturalEventListView,
+from .views import (CulturalEventDetailView, CulturalEventListView,
     CulturalEventCreateView,
     CulturalEventUpdateView,
     CulturalEventDeleteView,
 )
 urlpatterns = [
-    path('agenda-cultural/', CulturalEventListView.as_view(), name='cultural_event_list'),
-    path('agenda-cultural/nuevo/', CulturalEventCreateView.as_view(), name='cultural_event_create'),
-    path('agenda-cultural/<int:pk>/editar/', CulturalEventUpdateView.as_view(), name='cultural_event_update'),
-    path('agenda-cultural/<int:pk>/eliminar/', CulturalEventDeleteView.as_view(),name='cultural_event_delete'),
+    path('', CulturalEventListView.as_view(), name='event_list'),
+    path('nuevo/', CulturalEventCreateView.as_view(), name='event_create'),
+    path('<int:pk>/editar/', CulturalEventUpdateView.as_view(), name='event_edit'),
+    path('<int:pk>/eliminar/', CulturalEventDeleteView.as_view(),name='event_delete'),
+    path('<int:pk>/', CulturalEventDetailView.as_view(), name='event_detail'),
+
 ]

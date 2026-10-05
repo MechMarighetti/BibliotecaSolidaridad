@@ -290,3 +290,51 @@ a.text-success:hover {
     width: 2rem;
     height: 2rem;
 }
+/* Ajustes para el menú desplegable en la barra de navegación oscura */
+.navbar-dark .dropdown-menu {
+    background-color: #343a40; /* Mismo color que bg-dark de Bootstrap */
+    border: 1px solid #454d55;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+}
+
+/* Color del texto de los elementos del menú */
+.navbar-dark .dropdown-item {
+    color: #dee2e6; /* Color de texto claro */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Efecto hover y focus */
+.navbar-dark .dropdown-item:hover,
+.navbar-dark .dropdown-item:focus {
+    background-color: #495057; /* Un gris un poco más claro al pasar el mouse */
+    color: #ffffff;
+}
+
+/* Línea divisoria en el menú oscuro */
+.navbar-dark .dropdown-divider {
+    border-top-color: #454d55;
+}
+
+/* Asegurar que el menú se alinee bien en escritorio */
+@media (min-width: 992px) {
+    .navbar-nav .dropdown-menu {
+        margin-top: 0;
+    }
+}
+
+/* Estilo tipo acordeón para móviles (cuando la navbar está colapsada) */
+@media (max-width: 991.98px) {
+    .navbar-nav .dropdown-menu {
+        background-color: transparent;
+        border: none;
+        padding-left: 1rem; /* Sangría para que se vea como submenú */
+        box-shadow: none;
+    }
+    .navbar-dark .dropdown-item {
+        color: #adb5bd; /* Un tono más suave para los subelementos en móvil */
+    }
+    .navbar-dark .dropdown-item:hover {
+        background-color: transparent;
+        color: #fff;
+    }
+}

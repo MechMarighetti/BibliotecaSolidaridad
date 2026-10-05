@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Encabezado y botón de regreso -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-info-circle text-primary"></i> Detalles del Evento</h2>
+        <a href="{% url 'event_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a la Agenda
+        </a>
+    </div>
+
+    <!-- Tarjeta principal del evento -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                
+                <!-- Encabezado de la tarjeta con el título y tipo de evento -->
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                    <h3 class="mb-0">{{ event.title }}</h3>
+                    <span class="badge bg-light text-dark fs-6">{{ event.get_event_type_display }}</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Estado del evento -->
+                    <div class="mb-4 text-center">
+                        <span class="badge {% if event.status == 'programado' %}bg-primary{% elif event.status == 'realizado' %}bg-success{% else %}bg-danger{% endif %} fs-5 px-4 py-2">
+                            <i class="fas fa-circle-info"></i> Estado: {{ event.get_status_display }}
+                        </span>
+                    </div>
+
+                    <!-- Información clave en dos columnas -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="p-3 bg-light rounded h-100">
+                                <h5 class="text-primary mb-3"><i class="fas fa-calendar-alt"></i> Fecha y Horario</h5>
+                                <p class="mb-1"><strong>Fecha:</strong> {{ event.date|date:"l, d \d\e F \d\e Y" }}</p>
+                                <p class="mb-0">
+                                    <strong>Hora:</strong> {{ event.start_time|time:"H:i" }} 
+                                    {% if event.end_time %} - {{ event.end_time|time:"H:i" }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded h-100">
+                                <h5 class="text-primary mb-3"><i class="fas fa-map-marker-alt"></i> Ubicación y Cupo</h5>
+                                <p class="mb-1"><strong>Lugar:</strong> {{ event.location }}</p>
+                                {% if event.capacity %}
+                                <p class="mb-0"><strong>Cupo máximo:</strong> {{ event.capacity }} personas</p>
+                                {% else %}
+                                <p class="mb-0 text-muted"><em>Sin límite de cupo especificado</em></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción del evento -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">Descripción del Evento</h5>
+                        <p class="card-text mt-3" style="white-space: pre-line; text-align: justify;">
+                            {{ event.description|default:"No hay una descripción detallada disponible para este evento." }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pie de tarjeta con metadatos de auditoría -->
+                <div class="card-footer bg-light text-muted small d-flex flex-column flex-sm-row justify-content-between gap-2">
+                    <span>
+                        <i class="fas fa-user-edit"></i> Creado por: 
+                        {{ event.created_by.get_full_name|default:event.created_by.username|default:"Sistema" }}
+                    </span>
+                    <span>
+                        <i class="fas fa-clock"></i> Última actualización: {{ event.updated_at|date:"d/m/Y H:i" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Botones de acción para Bibliotecarios/Admins -->
+            {% if user.role == 'librarian' or user.role == 'admin' %}
+            <div class="d-flex justify-content-end gap-2 mt-4 mb-5">
+                <a href="{% url 'event_edit' event.pk %}" class="btn btn-warning px-4">
+                    <i class="fas fa-edit"></i> Editar Evento
+                </a>
+                <a href="{% url 'event_delete' event.pk %}" class="btn btn-danger px-4">
+                    <i class="fas fa-trash"></i> Eliminar Evento
+                </a>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
