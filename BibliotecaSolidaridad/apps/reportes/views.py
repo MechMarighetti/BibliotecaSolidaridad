@@ -13,6 +13,7 @@ from io import BytesIO
 from apps.loans.models import Loan
 from apps.books.models import Book
 from apps.users.models import User
+from apps.users.mixin import LibrarianRequiredMixin
 from .forms import LoanReportForm
 from django.db import models
 
@@ -38,7 +39,7 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
         return HttpResponse(status=403)
 
 
-class LoanReportView(AdminRequiredMixin, ListView):
+class LoanReportView(LibrarianRequiredMixin, ListView):
     template_name = 'reportes/libros_prestados.html'
     context_object_name = 'loans'
     paginate_by = 25

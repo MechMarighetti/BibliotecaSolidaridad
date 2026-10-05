@@ -1,0 +1,29 @@
+.shelf-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .shelf-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+  }
+  .shelf-cover {
+    height: 240px;
+    object-fit: cover;
+    background-color: #f8f9fa;
+  }
+  .shelf-cover-placeholder {
+    height: 240px;
+    background-color: #f1f3f5;
+  }
+  .stretched-link-title::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  /* Evita que el stretched-link tape los formularios */
+  .shelf-card form,
+  .shelf-card select,
+  .shelf-card input,
+  .shelf-card button {
+    position: relative;
+    z-index: 2;
+  }

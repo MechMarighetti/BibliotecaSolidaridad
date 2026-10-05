@@ -163,10 +163,10 @@ class LibrarianDashboardView(LibrarianRequiredMixin, TemplateView):
         return (
             Category.objects
             .annotate(
-                book_count=Count('libros', distinct=True),
+                book_count=Count('books', distinct=True),
                 total_loans=Count(
-                    'libros__loans',
-                    filter=Q(libros__loans__status__in=['active', 'returned']),
+                    'books__loans',
+                    filter=Q(books__loans__status__in=['active', 'returned']),
                     distinct=True,
                 ),
             )
