@@ -31,6 +31,7 @@ urlpatterns = [
     path('dashboard/', include('apps.dashboard.urls')),
     path('newsletter/', include('apps.newsletter.urls')),
     path('cultural-event/', include('apps.culturalEvent.urls')),
+    path('reportes/', include('apps.reportes.urls')),
 
     # Autenticación
     path('accounts/login/', user_views.CustomLoginView.as_view(), name='login'),

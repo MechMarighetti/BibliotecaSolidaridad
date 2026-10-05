@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.newsletter',
     'apps.page',
     'apps.culturalEvent',
+    'apps.reportes',
 ]
 
 # ---------------------------------------------------------------------------
