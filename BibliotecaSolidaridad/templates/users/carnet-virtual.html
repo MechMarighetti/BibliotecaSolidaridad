@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Carnet Virtual - Biblioteca de la Solidaridad{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <header class="mb-4">
+        <h1>Biblioteca de la Solidaridad</h1>
+        <p class="subtitle">Tu carnet virtual de socio</p>
+    </header>
+
+    {# ---------- CARNET ---------- #}
+    <main class="card-carnet">
+        <div class="row g-0">
+
+
+            <div class="avatar-container">
+                {% if profile.avatar %}
+                    <img src="{% static user.profile.profile_picture %}" alt="Avatar de {{ user.get_full_name }}" class="avatar">
+                {% else %}
+                    <div class="avatar avatar-placeholder">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+    
+            <div class="user-info">
+                <h2 class="user-name">{{ user.get_full_name|default:user.username }}</h2>
+    
+                <div class="user-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Número de Carnet</span>
+                        <span class="detail-value">{{ profile.virtual_card_id|default:"—" }}</span>
+                    </div>
+    
+                    <div class="detail-item">
+                        <span class="detail-label">Fecha de Registro</span>
+                        <span class="detail-value">{{ user.date_joined|date:"d/m/Y" }}</span>
+                    </div>
+    
+                    <div class="detail-item">
+                        <span class="detail-label">Puntaje Actual</span>
+                        <span class="puntaje">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+                            </svg>
+                            {{ total_points }} puntos
+                        </span>
+                    </div>
+        </div>
+            </div>
+
+            <div class="card-actions">
+                <a href="{% url 'loans' %}" class="btn btn-primary">
+                    Solicitar un préstamo
+                </a>
+                <a href="{% url 'logout' %}" class="btn btn-outline">
+                    Cambiar de usuario
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#bajaModal">
+                    Dar de baja
+                </button>
+            </div>
+        </div>
+    </main>
+
+    {# ---------- HISTORIAL ---------- #}
+    <section class="history-section mt-5">
+        <div class="section-header d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Historial de Préstamos</h2>
+            <a href="{% url 'loans' %}" class="btn btn-primary btn-sm">Nueva Solicitud</a>
+        </div>
+
+        {% if loans %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Libro</th>
+                            <th>Fecha Préstamo</th>
+                            <th>Fecha Devolución</th>
+                            <th>Estado</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in loans %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        <a href="{% url 'book_detail' loan.book.pk %}"
+                                           class="text-decoration-none">
+                                            {{ loan.book.title }}
+                                        </a>
+                                    </strong><br>
+                                    <small class="text-muted">{{ loan.book.get_authors_display }}</small>
+                                </td>
+                                <td>{{ loan.loan_date|date:"d/m/Y"|default:"—" }}</td>
+                                <td>{{ loan.return_date|date:"d/m/Y"|default:"—" }}</td>
+                                <td>
+                                    {% if loan.status == 'active' %}
+                                        <span class="badge bg-warning text-dark">En préstamo</span>
+                                    {% elif loan.status == 'returned' %}
+                                        <span class="badge bg-success">Devuelto</span>
+                                    {% elif loan.status == 'late' %}
+                                        <span class="badge bg-danger">Devuelto con retraso</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ loan.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if loan.points %}
+                                        <span class="{% if loan.points > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                            {% if loan.points > 0 %}+{% endif %}{{ loan.points }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state text-center py-5">
+                <div class="display-4 mb-3">📚</div>
+                <h3 class="h5">Aún no tenés préstamos registrados</h3>
+                <p class="text-muted">
+                    Empezá a pedir libros en préstamo desde ahora y construí tu historial.
+                </p>
+                <a href="{% url 'book_list' %}" class="btn btn-primary">
+                    Explorar catálogo
+                </a>
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

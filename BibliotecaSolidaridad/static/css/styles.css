@@ -314,6 +314,13 @@ a.text-success:hover {
 .navbar-dark .dropdown-divider {
     border-top-color: #454d55;
 }
+.avatar-container{
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+
+}
 
 /* Asegurar que el menú se alinee bien en escritorio */
 @media (min-width: 992px) {

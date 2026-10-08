@@ -79,7 +79,7 @@ class OpenLibraryService:
         try:
             response = requests.get(
                 f"{OpenLibraryService.BASE_URL}/search.json",
-                params={'q': query, 'limit': limit},
+                params={'q': query, 'limit': limit, 'language': 'spa'},
                 headers=OpenLibraryService.HEADERS,
                 timeout=OpenLibraryService.TIMEOUT,
             )

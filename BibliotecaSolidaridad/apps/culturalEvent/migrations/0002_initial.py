@@ -9,24 +9,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("dashboard", "0001_initial"),
+        ("culturalEvent", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="notification",
-            name="user",
+            model_name="culturalevent",
+            name="created_by",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="notifications",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="cultural_events",
                 to=settings.AUTH_USER_MODEL,
-            ),
-        ),
-        migrations.AddIndex(
-            model_name="notification",
-            index=models.Index(
-                fields=["user", "read"], name="notificatio_user_id_1f75db_idx"
             ),
         ),
     ]

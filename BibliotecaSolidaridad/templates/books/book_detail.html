@@ -5,7 +5,7 @@
         <div class="col-md-4">
             <div class="card">
                 {% if book.cover_url %}
-                <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" />
+                <img src="{{ book.get_coverURL }}" class="card-img-top" alt="{{ book.title }}" />
                 {% else %}
                 <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px">
                     <i class="fas fa-book fa-5x text-muted"></i>

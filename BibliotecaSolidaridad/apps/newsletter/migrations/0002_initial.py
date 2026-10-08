@@ -9,24 +9,20 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("dashboard", "0001_initial"),
+        ("newsletter", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="notification",
+            model_name="newslettersubscriber",
             name="user",
-            field=models.ForeignKey(
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="notifications",
+                related_name="newsletter_subscription",
                 to=settings.AUTH_USER_MODEL,
-            ),
-        ),
-        migrations.AddIndex(
-            model_name="notification",
-            index=models.Index(
-                fields=["user", "read"], name="notificatio_user_id_1f75db_idx"
             ),
         ),
     ]

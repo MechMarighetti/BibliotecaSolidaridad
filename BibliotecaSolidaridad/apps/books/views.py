@@ -13,10 +13,10 @@ from django.db.models import Avg
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Book, Category, Review, Author, ISBN, ReadingStatus
+from .models import Book, Category, ReadingStatus, Review, Author
 from .forms import BookForm
 from .services import OpenLibraryService
-from apps.users.models import UserProfile
+from apps.users.models import UserProfile, User
 from django.db.models import Count, Sum, Avg, Max, Min, Q, F
 
 logger = logging.getLogger(__name__)
@@ -325,47 +325,23 @@ class CategoryDetailView(DetailView):
 # Reseñas
 # ---------------------------------------------------------------------------
 class MyShelfView(LoginRequiredMixin, ListView):
-    model = ReadingStatus
+    
     template_name = 'books/my_shelf.html'
     context_object_name = 'items'
     paginate_by = 20
 
     def get_queryset(self):
-        qs = (
-            ReadingStatus.objects
-            .filter(user=self.request.user)
-            .select_related('book')
-            .prefetch_related('book__authors', 'book__categories')
-        )
         status = self.request.GET.get('status')
-        if status in dict(ReadingStatus.Status.choices):
-            qs = qs.filter(status=status)
-        return qs.order_by('-updated_at')
+        return self.request.user.profile.get_shelf(status=status)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        profile = self.request.user.profile
 
-        # Contadores por estantería en UNA sola query
-        raw_counts = (
-            ReadingStatus.objects
-            .filter(user=self.request.user)
-            .values('status')
-            .annotate(total=Count('id'))
-        )
-        counts = {c['status']: c['total'] for c in raw_counts}
-
-        # Lista de pestañas lista para iterar en el template
-        ctx['shelf_tabs'] = [
-            {
-                'value': value,
-                'label': label,
-                'count': counts.get(value, 0),
-                'url': f'?status={value}',
-            }
-            for value, label in ReadingStatus.Status.choices
-        ]
-        ctx['total_count'] = sum(counts.values())
+        ctx['shelf_tabs'] = profile.get_shelf_tabs()
+        ctx['total_count'] = profile.get_shelf_total()
         ctx['active_status'] = self.request.GET.get('status', '')
+        ctx['status_choices'] = ReadingStatus.choices
         return ctx
 
 def _validate_rating_comment(request):

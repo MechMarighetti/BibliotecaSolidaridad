@@ -1,15 +1,13 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db.models import Count, Q
-
-User = get_user_model()
 
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -133,6 +131,12 @@ class Book(models.Model):
 
     def get_isbn_display(self):
         return ', '.join(self.isbns.values_list('isbn', flat=True))
+    
+    def get_coverURL(self):
+        """Devuelve la URL de la portada, o una imagen por defecto si no hay."""
+        if self.cover_url:
+            return self.cover_url
+        return '/static/images/default_cover.png'
 
 
 class BookStock(models.Model):
@@ -166,7 +170,9 @@ class ReviewQuerySet(models.QuerySet):
 
 
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews'
+    )
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews')
     rating = models.IntegerField()
     comment = models.TextField(blank=True)
@@ -186,7 +192,7 @@ class Review(models.Model):
 
 class ReadingStatus(models.TextChoices):
     
-    TO_READ = 'to_read', 'Por leer'
+    TO_READ = 'to_read', 'Quiero leer'
     READING = 'reading', 'Leyendo'
     READ = 'read', 'Leído'
 
@@ -204,3 +210,64 @@ class ReadingStatus(models.TextChoices):
     def default(cls):
         """Estado por defecto al agregar un libro a la estantería."""
         return cls.TO_READ
+
+class UserBookStatus(models.Model):
+    """Estado de lectura de un usuario sobre un libro específico."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='book_statuses',
+    )
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name='user_statuses',
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=ReadingStatus.choices,
+        default=ReadingStatus.TO_READ,
+        db_index=True,
+    )
+    progress = models.PositiveSmallIntegerField(default=0)
+    started_at = models.DateField(null=True, blank=True)
+    finished_at = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_book_statuses'
+        verbose_name = 'Estado de lectura'
+        verbose_name_plural = 'Estados de lectura'
+        unique_together = ('user', 'book')
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['book', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} · {self.book.title} · {self.get_status_display()}"
+
+    @property
+    def progress_percentage(self):
+        """Progreso como porcentaje. READ siempre es 100, TO_READ es 0."""
+        if self.status == ReadingStatus.READ:
+            return 100
+        if self.status == ReadingStatus.TO_READ:
+            return 0
+        return self.progress
+
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
+        today = timezone.now().date()
+        if self.status == ReadingStatus.READING and not self.started_at:
+            self.started_at = today
+        if self.status == ReadingStatus.READ and not self.finished_at:
+            self.finished_at = today
+            self.progress = 100
+        super().save(*args, **kwargs)
+    
+    
+    

@@ -53,16 +53,16 @@ AVATAR_CHOICES = [
     ('images/Armibiblio-.png', 'Tato el tatú carreta'),
     ('images/Bentevíbiblio-.png', 'Benteví el benteveo'),
     ('images/Carpibiblio-.png', 'Carpi el carpincho'),
-    ('images/Doctorbiblio-.png', 'Doctor el tordo'),
-    ('images/DonBargresbiblio-.png', 'Don Bargres el bagre'),
+    ('images/Doctorbiblio-.png', 'Doc el tordo'),
+    ('images/DonBargresbiblio-.png', 'Don Borges el bagre'),
     ('images/Francabiblio-.png', 'Franca la Ballena Austral'),
-    ('images/Guanabiblio-.png', 'Guana el guanaco'),
-    ('images/Guaribiblio-.png', 'Guari el aguará guazú'),
+    ('images/Guanabiblio-.png', 'Tato el guanaco'),
+    ('images/Guaribiblio-.png', 'Wari el aguará guazú'),
     ('images/Hormibiblio-.png', 'Hormi el oso hormiguero'),
-    ('images/Hornebiblio-.png', 'Horne el hornero'),
+    ('images/Hornebiblio-.png', 'Jero el hornero'),
     ('images/Jaguabiblio-.png', 'Yasí el yaguareté'),
-    ('images/Llamibiblio-.png', 'Llami la llama'),
-    ('images/Parribiblio-.png', 'Parri el loro'),
+    ('images/Llamibiblio-.png', 'Tuy la llama'),
+    ('images/Parribiblio-.png', 'Rolo el loro'),
     ('images/Pingubiblio-.png', 'Pingu la pingüina'),
     ('images/Susibiblio-.png', 'Zazo el zorro'),
     ('images/Tortubiblio-.png', 'Tuga la tortuga')
@@ -91,6 +91,67 @@ class UserProfile(models.Model):
         verbose_name_plural = 'Perfiles de Usuario'
     def __str__(self):
         return f"Perfil de {self.user.username}"
+    def get_shelf(self, status=None):
+        from apps.books.models import UserBookStatus, ReadingStatus   # ← acá
+        qs = (
+            UserBookStatus.objects
+            .filter(user=self.user)
+            .select_related('book')
+            .prefetch_related('book__authors', 'book__categories')
+            .order_by('-updated_at')
+        )
+        if status in dict(ReadingStatus.choices):
+            qs = qs.filter(status=status)
+        return qs
+
+    def get_shelf_counts(self):
+        from apps.books.models import UserBookStatus
+        from django.db.models import Count
+        raw = (
+            UserBookStatus.objects
+            .filter(user=self.user)
+            .values('status')
+            .annotate(total=Count('id'))
+        )
+        return {c['status']: c['total'] for c in raw}
+
+    def get_shelf_tabs(self):
+        from apps.books.models import ReadingStatus
+        counts = self.get_shelf_counts()
+        return [
+            {
+                'value': value,
+                'label': label,
+                'count': counts.get(value, 0),
+                'url': f'?status={value}',
+            }
+            for value, label in ReadingStatus.choices
+        ]
+
+    def get_shelf_total(self):
+        from apps.books.models import UserBookStatus
+        return UserBookStatus.objects.filter(user=self.user).count()
+
+    def get_reading_status_for(self, book):
+        from apps.books.models import UserBookStatus
+        return UserBookStatus.objects.filter(user=self.user, book=book).first()
+
+    def set_reading_status(self, book, status, progress=0, notes=''):
+        from apps.books.models import UserBookStatus
+        obj, _ = UserBookStatus.objects.update_or_create(
+            user=self.user,
+            book=book,
+            defaults={
+                'status': status,
+                'progress': progress,
+                'notes': notes,
+            },
+        )
+        return obj
+
+    def remove_from_shelf(self, book):
+        from apps.books.models import UserBookStatus
+        UserBookStatus.objects.filter(user=self.user, book=book).delete()
 
 
 @receiver(post_save, sender=User)
