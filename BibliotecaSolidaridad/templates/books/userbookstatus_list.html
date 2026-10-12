@@ -1,0 +1,15 @@
+{% extends 'base.html' %} {% load static %}
+
+{% block title %}Estado de libros del usuario - Biblioteca{% endblock %}
+{% block content %}
+USER BOOK STATUS LIST
+{% for user_book_status in user_book_statuses %}
+  <div class="user-book-status">
+    <h3>{{ user_book_status.book.title }}</h3>
+    <p>Estado: {{ user_book_status.status }}</p>
+    <p>Progreso: {{ user_book_status.progress }}%</p>
+  </div>
+{% empty %}
+  <p>No hay libros en tu estantería.</p>
+{% endfor %}
+{% endblock %}

@@ -48,7 +48,7 @@
                     {% if user.profile.virtual_card_id %}
                     <div class="text-center mt-3">
                         <div class="border rounded p-3 bg-light">
-                            <h6><a href="{{ user.profile.virtual_card }}" target="_blank">Carnet Virtual</a></h6>
+                            <h6><a href="{% url 'virtual_card' %}" target="_blank">Carnet Virtual</a></h6>
                             <code>{{ user.profile.virtual_card_id }}</code>
                         </div>
                     </div>
