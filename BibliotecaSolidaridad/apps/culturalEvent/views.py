@@ -49,7 +49,7 @@ class CulturalEventUpdateView(LibrarianRequiredMixin, UpdateView):
     """Permite al bibliotecario modificar un evento."""
     model = CulturalEvent
     form_class = CulturalEventForm
-    template_name = 'culturalEvent/event_form.html'
+    template_name = 'culturalEvent/cultural_event_form.html'
 
     def form_valid(self, form):
         response = super().form_valid(form)

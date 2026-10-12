@@ -9,6 +9,7 @@ class CulturalEventForm(forms.ModelForm):
         model = CulturalEvent
         fields = [
             'title',
+            'cover_image',
             'description',
             'event_type',
             'date',
@@ -20,6 +21,10 @@ class CulturalEventForm(forms.ModelForm):
         ]
 
         widgets = {
+            'cover_image': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*',
+            }),
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nombre del evento'

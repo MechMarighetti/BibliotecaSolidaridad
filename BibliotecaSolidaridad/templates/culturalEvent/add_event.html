@@ -9,7 +9,7 @@
                     <h3 class="mb-0"><i class="fas fa-calendar-plus"></i> Agregar Nuevo Evento</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" novalidate>
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
                         {% for field in form %}

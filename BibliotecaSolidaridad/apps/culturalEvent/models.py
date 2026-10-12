@@ -21,6 +21,11 @@ class CulturalEvent(models.Model):
     ]
 
     title = models.CharField(max_length=200, verbose_name='Título')
+    cover_image = models.ImageField(
+        upload_to='event_covers/',
+        blank=True,
+        verbose_name='Foto de portada',
+    )
     description = models.TextField(
         blank=True,
         verbose_name='Descripción'

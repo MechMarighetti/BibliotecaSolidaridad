@@ -98,6 +98,10 @@
                     {% if featured_event %}
             <div class="col-lg-5 mt-4 mt-lg-0">
                 <div class="card border-primary shadow-sm">
+                    {% if featured_event.cover_image %}
+                    <img src="{{ featured_event.cover_image.url }}" class="card-img-top"
+                        alt="Portada de {{ featured_event.title }}" style="height: 220px; object-fit: cover;">
+                    {% endif %}
                     <div class="card-body">
                         <span class="badge bg-primary mb-2">Próximo evento</span>
                         <h3 class="h5">{{ featured_event.title }}</h3>

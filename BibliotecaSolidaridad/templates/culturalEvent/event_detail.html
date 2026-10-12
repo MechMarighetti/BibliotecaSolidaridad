@@ -14,6 +14,10 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow-sm border-0">
+                {% if event.cover_image %}
+                <img src="{{ event.cover_image.url }}" class="card-img-top" alt="Portada de {{ event.title }}"
+                    style="max-height: 460px; object-fit: cover;">
+                {% endif %}
                 
                 <!-- Encabezado de la tarjeta con el título y tipo de evento -->
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
@@ -68,7 +72,11 @@
                 <div class="card-footer bg-light text-muted small d-flex flex-column flex-sm-row justify-content-between gap-2">
                     <span>
                         <i class="fas fa-user-edit"></i> Creado por: 
-                        {{ event.created_by.get_full_name|default:event.created_by.username|default:"Sistema" }}
+                        {% if event.created_by %}
+                            {{ event.created_by.get_full_name|default:event.created_by.username }}
+                        {% else %}
+                            Sistema
+                        {% endif %}
                     </span>
                     <span>
                         <i class="fas fa-clock"></i> Última actualización: {{ event.updated_at|date:"d/m/Y H:i" }}
