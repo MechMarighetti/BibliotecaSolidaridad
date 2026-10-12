@@ -41,6 +41,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'book_search' %}">Buscar Libros</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'author_list' %}">Autores</a>
+                </li>
                 
                 {% if user.is_authenticated %}
                 <li class="nav-item">

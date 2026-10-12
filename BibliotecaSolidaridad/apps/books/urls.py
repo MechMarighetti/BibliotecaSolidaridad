@@ -13,10 +13,13 @@ from .views import (
     RemoveFavoriteView,
     RemoveBookView,
     WorkEditionsAPIView,
-    
+    AuthorListView,
+    AuthorDetailView,
 )
 
 urlpatterns = [
+    path('authors/', AuthorListView.as_view(), name='author_list'),
+    path('authors/<int:pk>/', AuthorDetailView.as_view(), name='author_detail'),
     path('search/', BookSearchView.as_view(), name='book_search'),
     path('add/', AddBookView.as_view(), name='add_book'),
     path('<int:pk>/', BookDetailView.as_view(), name='book_detail'),

@@ -213,14 +213,22 @@
         <div class="row">
             {% for author in featured_authors %}
             <div class="col-md-4 mb-3">
-                <div class="card">
-                    <div class="card-body text-center">
+                <div class="card h-100">
+                    {% if author.openlibrary_profile.photo_url %}
+                    <img src="{{ author.openlibrary_profile.photo_url }}" class="card-img-top"
+                        alt="Foto de {{ author.name }}" style="height: 220px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                        style="height: 220px;">
                         <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title">{{ author.name.0 }}</h5>
+                    </div>
+                    {% endif %}
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="card-title">{{ author.name }}</h5>
                         <p class="card-text text-muted">{{ author.books_count }} libros en nuestra biblioteca</p>
-                        <a href="{% url 'book_search' %}?q={{ author.name|urlencode }}"
-                            class="btn btn-sm btn-outline-primary">
-                            Ver Libros
+                        <a href="{% url 'author_detail' author.pk %}"
+                            class="btn btn-sm btn-outline-primary mt-auto">
+                            Ver perfil
                         </a>
                     </div>
                 </div>
@@ -230,6 +238,11 @@
                 <p class="text-muted">Próximamente más autores destacados.</p>
             </div>
             {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'author_list' %}" class="btn btn-outline-primary">
+                Ver todos los autores
+            </a>
         </div>
     </div>
 </section>

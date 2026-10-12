@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ author.name }} - Autores{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <a href="{% url 'author_list' %}" class="btn btn-outline-secondary mb-4">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a autores
+    </a>
+
+    <section class="card shadow-sm mb-5">
+        <div class="row g-0">
+            <div class="col-md-4">
+                {% if author.openlibrary_profile.photo_url %}
+                <img src="{{ author.openlibrary_profile.photo_url }}" class="img-fluid rounded-start w-100"
+                    alt="Foto de {{ author.name }}" style="height: 100%; min-height: 280px; object-fit: cover;">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center h-100"
+                    style="min-height: 280px;">
+                    <i class="fas fa-user-tie fa-5x text-secondary" aria-hidden="true"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="card-body p-4">
+                    <h1 class="card-title">{{ author.name }}</h1>
+                    {% if author.openlibrary_profile.birth_date or author.openlibrary_profile.death_date %}
+                    <p class="text-muted">
+                        {% if author.openlibrary_profile.birth_date %}{{ author.openlibrary_profile.birth_date }}{% endif %}
+                        {% if author.openlibrary_profile.death_date %} – {{ author.openlibrary_profile.death_date }}{% endif %}
+                    </p>
+                    {% endif %}
+                    {% if author.openlibrary_profile.bio %}
+                    <h2 class="h5 mt-4">Biografía</h2>
+                    <p class="mb-0" style="white-space: pre-line;">{{ author.openlibrary_profile.bio }}</p>
+                    {% else %}
+                    <p class="text-muted mt-4">OpenLibrary no tiene una biografía disponible para este autor.</p>
+                    {% endif %}
+                    {% if author.openlibrary_profile.works_count %}
+                    <p class="small text-muted mt-3 mb-0">
+                        Obras registradas en OpenLibrary: {{ author.openlibrary_profile.works_count }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="h3 mb-4">Libros de {{ author.name }} en nuestra biblioteca</h2>
+        <div class="row g-4">
+            {% for book in books %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <article class="card h-100 shadow-sm">
+                    {% if book.cover_url %}
+                    <img src="{{ book.cover_url }}" class="card-img-top" alt="Portada de {{ book.title }}"
+                        style="height: 240px; object-fit: cover;" loading="lazy">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                        style="height: 240px;">
+                        <i class="fas fa-book fa-3x text-secondary" aria-hidden="true"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h6 card-title">{{ book.title }}</h3>
+                        <p class="small text-muted">{{ book.publish_date|default:"Fecha de publicación desconocida" }}</p>
+                        <a href="{% url 'book_detail' book.pk %}" class="btn btn-sm btn-outline-primary mt-auto">
+                            Ver libro
+                        </a>
+                    </div>
+                </article>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted">Este autor todavía no tiene libros asociados en nuestra biblioteca.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

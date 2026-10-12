@@ -289,8 +289,14 @@ class AuthorListView(ListView):
 
     def get_queryset(self):
         return Author.objects.annotate(
-            books_count=Book.objects.Count('books')
+            books_count=Count('books')
         ).order_by('name')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        page_authors = ctx['authors']
+        OpenLibraryService.attach_author_profiles(page_authors)
+        return ctx
 
 
 class AuthorDetailView(DetailView):
@@ -300,7 +306,12 @@ class AuthorDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['books'] = self.object.books.prefetch_related('categories').order_by('-created_at')
+        OpenLibraryService.attach_author_profiles([self.object])
+        ctx['books'] = (
+            self.object.books
+            .prefetch_related('categories')
+            .order_by('-created_at')
+        )
         return ctx
 
 
@@ -465,5 +476,4 @@ class ProfileView(LoginRequiredMixin, DetailView):
             status='active'
         ).select_related('book')
         return ctx
-
 

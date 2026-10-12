@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 from apps.culturalEvent.models import CulturalEvent
 from apps.books.models import Book, Category, Author
+from apps.books.services import OpenLibraryService
 from apps.loans.models import Loan
 from apps.users.models import User
 from django.db.models import Count, Sum, Avg, Max, Min, Q, F
@@ -41,6 +42,7 @@ class HomeView(TemplateView):
             .filter(books_count__gt=0)
             .order_by('-books_count')[:6]
         )
+        OpenLibraryService.attach_author_profiles(featured_authors)
 
         # ---------------------------------------------------------
         # Eventos culturales

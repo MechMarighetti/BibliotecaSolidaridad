@@ -45,13 +45,30 @@ class OpenLibraryService:
             )
             response.raise_for_status()
             data = response.json()
+            bio = data.get('bio', '')
+            if isinstance(bio, dict):
+                bio = bio.get('value', '')
+            photo_ids = data.get('photos', [])
+            if not isinstance(photo_ids, list):
+                photo_ids = []
+            photo_id = next(
+                (
+                    value for value in photo_ids
+                    if isinstance(value, int) and value > 0
+                ),
+                None,
+            )
             author = {
                 'openlibrary_id': data.get('key', f'/authors/{author_id}'),
                 'name': data.get('name', ''),
-                'bio': data.get('bio', ''),
+                'bio': bio,
                 'birth_date': data.get('birth_date'),
                 'death_date': data.get('death_date'),
-                'photo_ids': data.get('photos', []),
+                'photo_ids': photo_ids,
+                'photo_url': (
+                    f"{OpenLibraryService.COVERS_URL}/a/id/{photo_id}-M.jpg"
+                    if photo_id else None
+                ),
                 'works_count': data.get('work_count', 0),
             }
             cache.set(cache_key, author, OpenLibraryService.CACHE_TTL)
@@ -59,6 +76,59 @@ class OpenLibraryService:
         except (Timeout, ConnectionError, HTTPError, ValueError) as error:
             logger.error("Error fetching OpenLibrary author %s: %s", author_id, error)
             return {}
+
+    @staticmethod
+    def get_author_profile(name: str, olid: str = '') -> dict:
+        """Obtiene el perfil OpenLibrary; si falta el ID, lo resuelve por nombre exacto."""
+        if olid:
+            return OpenLibraryService.get_author_details(olid)
+        if not name or not name.strip():
+            return {}
+
+        normalized_name = ' '.join(name.casefold().split())
+        cache_key = f"openlibrary_author_search_{slugify(normalized_name)}"
+        cached_id = cache.get(cache_key)
+        if cached_id is None:
+            try:
+                response = requests.get(
+                    f"{OpenLibraryService.BASE_URL}/search/authors.json",
+                    params={'q': name, 'limit': 10},
+                    headers=OpenLibraryService.HEADERS,
+                    timeout=OpenLibraryService.TIMEOUT,
+                )
+                response.raise_for_status()
+                docs = response.json().get('docs', [])
+                exact_matches = [
+                    doc for doc in docs
+                    if isinstance(doc.get('name'), str)
+                    and ' '.join(doc['name'].casefold().split())
+                    == normalized_name
+                    and doc.get('key')
+                ]
+                cached_id = (
+                    exact_matches[0]['key'] if exact_matches else ''
+                )
+                cache.set(cache_key, cached_id, OpenLibraryService.CACHE_TTL)
+            except (Timeout, ConnectionError, HTTPError, ValueError) as error:
+                logger.error(
+                    "Error searching OpenLibrary author %s: %s", name, error
+                )
+                return {}
+
+        return (
+            OpenLibraryService.get_author_details(cached_id)
+            if cached_id else {}
+        )
+
+    @staticmethod
+    def attach_author_profiles(authors):
+        """Adjunta el perfil de OpenLibrary para mostrarlo sin alterar el modelo local."""
+        for author in authors:
+            author.openlibrary_profile = OpenLibraryService.get_author_profile(
+                author.name,
+                author.openlibrary_id or '',
+            )
+        return authors
 
     # =================================================================
     # Búsqueda general
