@@ -3,13 +3,12 @@ from django.views.generic import TemplateView, ListView, CreateView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.db import transaction
 from .models import LoanRequest, Loan
-from apps.books.models import Book
+from apps.books.models import Book, BookStock
+from .availability import available_books_queryset, available_copy_count
 from django.utils import timezone
 import logging
-from datetime import timedelta
-from django.db.models import Q, Count
-
 
 
 class LoanRequestView(LoginRequiredMixin, TemplateView):
@@ -17,7 +16,9 @@ class LoanRequestView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["available_books"] = Book.objects.filter(available=True)
+        context["available_books"] = available_books_queryset().prefetch_related(
+            'authors'
+        )
         return context
 
 
@@ -27,6 +28,24 @@ class SubmitLoanRequestView(LoginRequiredMixin, CreateView):
     fields = ['book', 'loan_type']
     template_name = 'loans/submit_loan_request.html'
     success_url = reverse_lazy('user_loans')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if request.user.role not in ('reader', 'librarian'):
+            messages.error(
+                request,
+                'Solo lectores y bibliotecarios pueden solicitar préstamos.',
+            )
+            return redirect('book_search')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['book'].queryset = available_books_queryset().prefetch_related(
+            'authors'
+        )
+        return form
     
     def form_valid(self, form):
         """Validaciones adicionales antes de guardar"""
@@ -36,6 +55,14 @@ class SubmitLoanRequestView(LoginRequiredMixin, CreateView):
         if not self.request.user.is_active_member:
             messages.error(self.request, "No puedes solicitar préstamos. Tu membresía no está activa.")
             return redirect('loans')
+
+        book = form.instance.book
+        if not book.available or available_copy_count(book) < 1:
+            messages.error(
+                self.request,
+                f'No hay copias disponibles de "{book.title}" en este momento.',
+            )
+            return redirect('book_detail', pk=book.pk)
         
         # Validación 2: Límite de préstamos
         active_loans = Loan.objects.filter(
@@ -53,17 +80,29 @@ class SubmitLoanRequestView(LoginRequiredMixin, CreateView):
         # Validación 3: No duplicar solicitud pendiente
         existing = LoanRequest.objects.filter(
             user=self.request.user,
-            book=form.instance.book,
+            book=book,
             status='pending'
         ).exists()
         
         if existing:
             messages.error(self.request, "Ya tienes una solicitud pendiente para este libro.")
-            return redirect('loans')
+            return redirect('book_detail', pk=book.pk)
+
+        already_borrowed = Loan.objects.filter(
+            user=self.request.user,
+            book=book,
+            status='active',
+        ).exists()
+        if already_borrowed:
+            messages.error(
+                self.request,
+                'Ya tienes un préstamo activo de este libro.',
+            )
+            return redirect('book_detail', pk=book.pk)
         
         messages.success(
             self.request, 
-            f'Solicitud de préstamo para "{form.instance.book.title}" enviada.'
+            f'Solicitud de préstamo para "{book.title}" enviada.'
         )
         return super().form_valid(form)
 
@@ -72,6 +111,9 @@ class SubmitLoanRequestView(LoginRequiredMixin, CreateView):
         for field, errors in form.errors.items():
             for err in errors:
                 messages.error(self.request, f"{field}: {err}")
+        book_id = form.data.get('book', '')
+        if book_id.isdigit() and Book.objects.filter(pk=book_id).exists():
+            return redirect('book_detail', pk=book_id)
         return redirect('loans')
     
 class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
@@ -118,7 +160,7 @@ class LoansManagerView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             'pending_requests': len(loan_reqs),
             'active_loans': Loan.objects.filter(status='active').count(),
             'overdue_loans': context['overdue_loans'].count(),
-            'total_books': Book.objects.filter(available=True).count(),
+            'total_books': available_books_queryset().count(),
         }
         
         return context
@@ -129,13 +171,11 @@ class ApproveLoanRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.role in ['librarian', 'admin']
     
-    def post(self, request, *args, **kwargs):
-        loan_request_id = kwargs.get('loan_request_id') or kwargs.get('request_id')
+    def post(self, request, loan_request_id):
         request_obj = get_object_or_404(LoanRequest, id=loan_request_id)
 
         try:
-            # El modelo maneja la lógica
-            loan = request_obj.approve(approved_by=request.user)
+            request_obj.approve(approved_by=request.user)
             messages.success(
                 request,
                 f'Préstamo de "{request_obj.book.title}" aprobado. Entrega al usuario.'
@@ -181,35 +221,35 @@ class ReturnBookView(LoginRequiredMixin, UserPassesTestMixin, View):
         return self.request.user.role in ['librarian', 'admin']
     
     def post(self, request, loan_id):
-        loan = get_object_or_404(Loan, id=loan_id, status='active')
-        
-        try:
-            # Marcar préstamo como devuelto
+        with transaction.atomic():
+            loan = get_object_or_404(
+                Loan.objects.select_for_update().select_related(
+                    'book', 'user', 'stock_item'
+                ),
+                id=loan_id,
+                status='active',
+            )
             loan.status = 'returned'
             loan.return_date = timezone.now().date()
-            loan.save()
-            
-            # Marcar libro como disponible
-            loan.book.available = True
-            loan.book.save()
-            
-            # Calcular si hubo mora
+            loan.save(update_fields=['status', 'return_date'])
+
+            if loan.stock_item_id:
+                BookStock.objects.filter(
+                    pk=loan.stock_item_id,
+                    status='borrowed',
+                ).update(status='available')
+
             if loan.return_date > loan.due_date:
                 days_overdue = (loan.return_date - loan.due_date).days
-                # Aplicar penalización por mora
                 loan.user.score = max(0, loan.user.score - (days_overdue * 0.5))
                 loan.user.save()
-                
                 messages.warning(
                     request, 
                     f'Libro devuelto con {days_overdue} días de mora. Puntuación del usuario actualizada.'
                 )
             else:
                 messages.success(request, f'Libro "{loan.book.title}" devuelto correctamente.')
-            
-        except Exception as e:
-            messages.error(request, f'Error al registrar devolución: {str(e)}')
-        
+
         return redirect('manage_loans')
 
 class UserLoansView(LoginRequiredMixin, ListView):

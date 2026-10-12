@@ -17,6 +17,8 @@ from .models import Book, Category, ReadingStatus, Review, Author
 from .forms import BookForm
 from .services import OpenLibraryService
 from apps.users.models import UserProfile, User
+from apps.loans.availability import available_copy_count
+from apps.loans.models import Loan, LoanRequest
 from django.db.models import Count, Sum, Avg, Max, Min, Q, F
 
 logger = logging.getLogger(__name__)
@@ -125,9 +127,7 @@ class BookDetailView(DetailView):
         ctx['average_rating'] = round(
             reviews.aggregate(avg=Avg('rating'))['avg'] or 0, 1
         )
-        ctx['total_loans'] = (
-            book.loan_set.count() if hasattr(book, 'loan_set') else 0
-        )
+        ctx['total_loans'] = book.loans.count()
 
         user = self.request.user
         ctx['user_review'] = (
@@ -139,6 +139,24 @@ class BookDetailView(DetailView):
             and hasattr(user, 'profile')
             and hasattr(user.profile, 'favorite_books')
             and book in user.profile.favorite_books.all()
+        )
+        ctx['available_copies'] = available_copy_count(book)
+        ctx['loan_available'] = book.available and ctx['available_copies'] > 0
+        ctx['has_pending_loan_request'] = (
+            user.is_authenticated
+            and LoanRequest.objects.filter(
+                user=user,
+                book=book,
+                status='pending',
+            ).exists()
+        )
+        ctx['has_active_loan'] = (
+            user.is_authenticated
+            and Loan.objects.filter(
+                user=user,
+                book=book,
+                status='active',
+            ).exists()
         )
         return ctx
 
@@ -476,4 +494,3 @@ class ProfileView(LoginRequiredMixin, DetailView):
             status='active'
         ).select_related('book')
         return ctx
-

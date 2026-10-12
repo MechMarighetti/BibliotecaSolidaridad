@@ -12,14 +12,28 @@
                 </div>
                 {% endif %}
                 <div class="card-body">
-                    {% if user.is_authenticated and user.role == 'reader' %} {% if book.is_available %}
-                    <a href="{% url 'loan_request' book.id %}" class="btn btn-primary w-100 mb-2">
-                        <i class="fas fa-hand-holding"></i> Solicitar Préstamo
-                    </a>
+                    {% if user.is_authenticated and user.role == 'reader' or user.is_authenticated and user.role == 'librarian' %}
+                    {% if has_pending_loan_request %}
+                    <p class="alert alert-info mb-2" role="status">Ya enviaste una solicitud para este libro.</p>
+                    {% elif has_active_loan %}
+                    <p class="alert alert-info mb-2" role="status">Ya tenés un préstamo activo de este libro.</p>
+                    {% elif loan_available and user.is_active_member %}
+                    <button type="button" class="btn btn-primary w-100 mb-2"
+                        data-bs-toggle="modal" data-bs-target="#loanConfirmationModal">
+                        <i class="fas fa-hand-holding" aria-hidden="true"></i> Solicitar préstamo
+                    </button>
+                    {% elif not user.is_active_member %}
+                    <button class="btn btn-secondary w-100 mb-2" disabled>
+                        <i class="fas fa-user-slash" aria-hidden="true"></i> Membresía inactiva
+                    </button>
                     {% else %}
-                    <button class="btn btn-secondary w-100 mb-2" disabled><i class="fas fa-times-circle"></i> No Disponible</button>
+                    <button class="btn btn-secondary w-100 mb-2" disabled>
+                        <i class="fas fa-times-circle" aria-hidden="true"></i> No hay copias disponibles
+                    </button>
+                    {% endif %}
                     {% endif %}
 
+                    {% if user.is_authenticated and user.role == 'reader' %}
                     <form method="post" action="{% url 'toggle_favorite' book.id %}">
                         {% csrf_token %} {% if is_favorite %}
                         <button type="submit" class="btn btn-outline-danger w-100"><i class="fas fa-heart"></i> Quitar de Favoritos</button>
@@ -62,8 +76,8 @@
 
                     <div class="mb-3">
                         <strong>Disponibilidad:</strong>
-                        {% if book.available %}
-                        <span class="badge bg-success">{{ book.stock }} copias disponibles</span>
+                        {% if loan_available %}
+                        <span class="badge bg-success">{{ available_copies }} copias disponibles</span>
                         {% else %}
                         <span class="badge bg-danger">No disponible</span>
                         {% endif %}
@@ -167,6 +181,44 @@
         </div>
     </div>
 </div>
+
+{% if user.is_authenticated and user.role == 'reader' or user.is_authenticated and user.role == 'librarian' %}
+{% if loan_available and user.is_active_member and not has_pending_loan_request and not has_active_loan %}
+<div class="modal fade" id="loanConfirmationModal" tabindex="-1"
+    aria-labelledby="loanConfirmationTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="loanConfirmationTitle">Confirmar solicitud</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    aria-label="Cerrar"></button>
+            </div>
+            <form method="post" action="{% url 'submit_loan_request' %}">
+                {% csrf_token %}
+                <input type="hidden" name="book" value="{{ book.pk }}">
+                <div class="modal-body">
+                    <p>¿Querés solicitar <strong>{{ book.title }}</strong>?</p>
+                    <p class="text-muted mb-3">{{ available_copies }} copias disponibles.</p>
+                    <label for="loan-type-{{ book.pk }}" class="form-label">Duración del préstamo</label>
+                    <select class="form-select" id="loan-type-{{ book.pk }}" name="loan_type" required>
+                        <option value="normal">Normal (15 días)</option>
+                        <option value="express">Express (3 días)</option>
+                        <option value="summer">Verano (2 meses)</option>
+                    </select>
+                    <p class="small text-muted mt-3 mb-0">La solicitud se enviará al equipo de biblioteca para su aprobación.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir explorando</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Confirmar solicitud
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
 
 <!-- Modal para Agregar o Editar Reseña -->
 {% if user.is_authenticated %}

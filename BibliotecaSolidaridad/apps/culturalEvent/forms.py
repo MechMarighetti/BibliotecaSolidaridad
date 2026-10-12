@@ -24,6 +24,7 @@ class CulturalEventForm(forms.ModelForm):
             'cover_image': forms.ClearableFileInput(attrs={
                 'class': 'form-control',
                 'accept': 'image/*',
+                'placeholder': 'Selecciona una imagen'
             }),
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -37,7 +38,8 @@ class CulturalEventForm(forms.ModelForm):
             }),
 
             'event_type': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'form-control',
+                'placeholder': 'Selecciona el tipo de evento'
             }),
 
             'date': forms.DateInput(attrs={

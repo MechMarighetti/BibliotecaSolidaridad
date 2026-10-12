@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.db import models, transaction
 from django.contrib.auth import get_user_model
-from apps.books.models import Book
+from apps.books.models import Book, BookStock
 from django.utils import timezone
 User = get_user_model()
 
@@ -31,6 +31,13 @@ class Loan(models.Model):
     # Relaciones
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loans')
     book = models.ForeignKey('books.Book', on_delete=models.CASCADE, related_name='loans')
+    stock_item = models.ForeignKey(
+        'books.BookStock',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='loans',
+    )
     
     # Campos
     loan_type = models.CharField(max_length=10, choices=LOAN_TYPES, default='normal')
@@ -193,44 +200,62 @@ class LoanRequest(models.Model):
     
     def approve(self, approved_by):
         """Aprueba la solicitud y crea el préstamo"""
-        if self.status != 'pending':
-            raise ValueError("Solo se pueden aprobar solicitudes pendientes")
-        
-        # Validaciones
-        if not self.user.is_active_member:
-            raise ValueError("Usuario no es miembro activo")
-        
-        active_loans_count = Loan.objects.filter(
-            user=self.user, 
-            status='active'
-        ).count()
-        
-        if active_loans_count >= self.user.get_loan_limit():
-            raise ValueError("Usuario ha alcanzado su límite de préstamos")
-        
-        # Crear préstamo dentro de transacción y marcar libro como no disponible
         with transaction.atomic():
+            request_obj = LoanRequest.objects.select_for_update().select_related(
+                'user'
+            ).get(pk=self.pk)
+            if request_obj.status != 'pending':
+                raise ValueError("Solo se pueden aprobar solicitudes pendientes")
+            if not request_obj.user.is_active_member:
+                raise ValueError("Usuario no es miembro activo")
+
+            active_loans_count = Loan.objects.filter(
+                user=request_obj.user,
+                status='active',
+            ).count()
+            if active_loans_count >= request_obj.user.get_loan_limit():
+                raise ValueError("Usuario ha alcanzado su límite de préstamos")
+
+            book = Book.objects.select_for_update().get(pk=request_obj.book_id)
+            if not book.available:
+                raise ValueError("Este libro no está habilitado para préstamo")
+
+            from apps.loans.availability import available_copy_count
+
+            if available_copy_count(book) < 1:
+                raise ValueError("No quedan copias disponibles de este libro")
+
+            stock_item = None
+            if BookStock.objects.filter(book=book).exists():
+                stock_item = BookStock.objects.select_for_update().filter(
+                    book=book,
+                    status='available',
+                ).first()
+                if stock_item is None:
+                    raise ValueError("No quedan copias disponibles de este libro")
+
             loan = Loan.objects.create(
-                user=self.user,
-                book=self.book,
-                loan_type=self.loan_type,
+                user=request_obj.user,
+                book=book,
+                stock_item=stock_item,
+                loan_type=request_obj.loan_type,
                 status='active'
             )
 
-            # Marcar libro como no disponible
-            try:
-                self.book.available = False
-                self.book.save()
-            except Exception:
-                # Si marcar libro falla, revertemos la transacción
-                raise
+            if stock_item:
+                stock_item.status = 'borrowed'
+                stock_item.save(update_fields=['status'])
 
-            # Actualizar solicitud
-            self.status = 'approved'
-            self.approved_by = approved_by
-            self.approved_date = timezone.now()
-            self.save()
+            request_obj.status = 'approved'
+            request_obj.approved_by = approved_by
+            request_obj.approved_date = timezone.now()
+            request_obj.save(update_fields=[
+                'status', 'approved_by', 'approved_date',
+            ])
 
+        self.status = request_obj.status
+        self.approved_by = request_obj.approved_by
+        self.approved_date = request_obj.approved_date
         return loan
     
     def reject(self):
