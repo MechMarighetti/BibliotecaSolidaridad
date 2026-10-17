@@ -533,7 +533,7 @@ textarea:focus-visible,
     padding: clamp(1.4rem, 4vw, 3.5rem) 0 2.2rem;
     background:
         linear-gradient(135deg, var(--yellow) 0%, var(--pink) 100%);
-       
+
     color: var(--white);
 }
 
@@ -1482,4 +1482,10 @@ textarea:focus-visible,
         background-color: transparent;
         color: #fff;
     }
+}
+
+.card-carnet-container {
+    border: 3px dotted var(--orange);
+    border-radius: 12px;
+    background-color: var(--white);
 }
