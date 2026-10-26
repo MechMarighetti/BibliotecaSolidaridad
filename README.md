@@ -105,7 +105,9 @@ BibliotecaSolidaridad/
 │   ├── books/           # Gestión de libros y catálogo
 │   ├── users/           # Autenticación y perfiles
 │   ├── loans/           # Sistema de préstamos
+│   ├── culturalevents/  # Cartelera de Eventos
 │   └── dashboard/       # Panel administrativo
+│   └── reportes/        # Descarga de reportes en csv y xlsx
 ├── static/
 │   ├── css/            # Estilos personalizados
 │   ├── js/             # Scripts JavaScript
@@ -137,11 +139,16 @@ BibliotecaSolidaridad/
 - **Lista de libros favoritos**
 - **Historial personal** de actividad
 
+- ### Módulo de Eventos Culturales
+- **Formulario de eventos** con calendario planificador
+- **Detalles de los eventos**
+- **Lista de Próximos Eventos**
+
 ### Dashboard
 - **Métricas clave**: libros totales, miembros activos, préstamos
 - **Gráficos y estadísticas**
 - **Gestión rápida** de solicitudes pendientes
-- **Reportes** de uso y popularidad
+- **Reportes** descargables en csv y xlsx
 
 ## 🔧 Configuración de Entorno
 
@@ -175,9 +182,6 @@ DATABASES = {
 ### Comandos Útiles
 
 ```bash
-# Ejecutar tests
-python manage.py test
-
 # Crear migraciones
 python manage.py makemigrations
 
@@ -186,9 +190,6 @@ python manage.py migrate
 
 # Recopilar archivos estáticos
 python manage.py collectstatic
-
-# Crear datos de prueba
-python manage.py loaddata fixtures/datos_prueba.json
 ```
 
 ### Estructura de una App Django
@@ -198,6 +199,7 @@ Cada app sigue la estructura estándar de Django:
 - `views.py` - Lógica de vistas
 - `urls.py` - Rutas de la app
 - `forms.py` - Formularios
+- `mixins.py` - Mixins
 - `templates/` - Plantillas HTML
 
 ## 🌐 Despliegue en Producción
@@ -206,9 +208,8 @@ Cada app sigue la estructura estándar de Django:
 
 1. **Configurar `DEBUG=False`**
 2. **Configurar base de datos PostgreSQL**
-3. **Configurar servidor web (Nginx + Gunicorn)**
+3. **Configurar servidor web: PythonAnywhere**
 4. **Configurar dominio y SSL**
-5. **Configurar servicio de emails**
 
 ### Comandos de Producción
 
@@ -233,7 +234,7 @@ python manage.py loaddata categorias_iniciales.json
 
 ## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto es desarrollado exclusivamente por los contribuyentes, estudiantes de la carrera Tecnicatura Superior en Desarrollo de Software, del IFTS 18 de la Ciudad de Buenos Aires.
 
 ## 🆘 Soporte
 
@@ -247,7 +248,7 @@ Si encuentras algún problema o tienes preguntas:
 
 **Estado**:  En Desarrollo Activo  
 **Versión**: 1.0.0-beta  
-**Última Actualización**: Octubre 2025
+**Última Actualización**: Octubre 2026
 
 ---
 
