@@ -53,7 +53,24 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="mb-0">{{ book.title }}</h3>
+
+                    {% if user.is_authenticated and user.role == 'librarian' or user.is_authenticated and user.role == 'admin' %}
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <a href="{% url 'edit_book' pk=book.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Editar libro
+                        </a>
+
+                        <form method="post" action="{% url 'remove_book' book_id=book.id %}"
+                            onsubmit="return confirm('¿Estás segura de que querés eliminar este libro?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Eliminar libro
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
+
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-sm-6"><strong>Autor:</strong> {{ book.get_authors_display }}</div>

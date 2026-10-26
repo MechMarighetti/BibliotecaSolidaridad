@@ -15,6 +15,7 @@ from .views import (
     WorkEditionsAPIView,
     AuthorListView,
     AuthorDetailView,
+    EditBookView,
 )
 
 urlpatterns = [
@@ -22,6 +23,7 @@ urlpatterns = [
     path('authors/<int:pk>/', AuthorDetailView.as_view(), name='author_detail'),
     path('search/', BookSearchView.as_view(), name='book_search'),
     path('add/', AddBookView.as_view(), name='add_book'),
+    path('edit/<int:pk>/', EditBookView.as_view(), name='edit_book'),
     path('<int:pk>/', BookDetailView.as_view(), name='book_detail'),
     path('<int:book_id>/review/', AddReviewView.as_view(), name='add_review'),
     path('<int:book_id>/review/edit/', EditReviewView.as_view(), name='edit_review'),

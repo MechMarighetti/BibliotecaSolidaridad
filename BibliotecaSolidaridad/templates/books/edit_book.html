@@ -1,0 +1,80 @@
+```django
+{% extends 'base.html' %}
+
+{% block title %}Editar libro - Biblioteca de la Solidaridad{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit"></i>
+                        Editar información del libro
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <p class="text-muted">
+                        Modificá los datos que necesites y guardá los cambios.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label
+                                    for="{{ field.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <div class="form-text">
+                                        {{ field.help_text }}
+                                    </div>
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-flex flex-wrap gap-2 mt-4">
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                            >
+                                <i class="fas fa-save"></i>
+                                Guardar cambios
+                            </button>
+
+                            <a
+                                href="{% url 'book_detail' book.pk %}"
+                                class="btn btn-outline-secondary"
+                            >
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+```
